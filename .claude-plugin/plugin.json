@@ -1,0 +1,10 @@
+{
+  "name": "resumen-gf",
+  "description": "Resumen de 10 puntos de un grupo focal: título, párrafo en lenguaje llano y de 2 a 4 citas textuales verificadas contra la transcripción, con hablante y marca de tiempo, en .docx con Corbel.",
+  "version": "0.3.0",
+  "author": {
+    "name": "Ramon Zamora"
+  },
+  "license": "MIT",
+  "keywords": ["grupos focales", "investigación cualitativa", "resumen", "citas", "docx"]
+}

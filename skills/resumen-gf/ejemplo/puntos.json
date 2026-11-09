@@ -1,0 +1,79 @@
+{
+ "titulo": "Resumen de puntos clave del grupo focal de prueba",
+ "subtitulo": "Ejemplo ficticio para probar la instalación · 4 participantes · 4 minutos",
+ "fuente": "turns_ts.json",
+ "salida": "Resumen 10 puntos - ejemplo ficticio.docx",
+ "estado": "revisado",
+ "equipo": [
+  "Moderador"
+ ],
+ "citas_min": 2,
+ "citas_max": 4,
+ "perfiles": {
+  "Participante 1": "Mujer, 29 años, vendedora",
+  "Participante 2": "Hombre, 24 años, estudiante universitario",
+  "Participante 3": "Hombre, 31 años, mensajero",
+  "Participante 4": "Mujer, 27 años, maestra"
+ },
+ "puntos": [
+  {
+   "titulo": "El tiempo perdido en el transporte",
+   "cuerpo": "El grupo empieza hablando del viaje diario. Varias personas cuentan que pasan horas en el bus y que ese tiempo se lo quitan al estudio o a la familia. Una persona cambió el bus por la moto para llegar más rápido, y otra prefiere el bus porque la moto le parece peligrosa.",
+   "citas": [
+    {
+     "texto": "Uno pierde como tres horas al día en el bus, que es tiempo que podría estar estudiando o con la familia.",
+     "hablante": "Participante 2",
+     "ts": "00:00:31"
+    },
+    {
+     "texto": "Yo me compré una moto por eso mismo. (…) llego en media hora y ya no dependo del bus.",
+     "hablante": "Participante 3",
+     "ts": "00:00:52"
+    },
+    {
+     "texto": "Prefiero el bus aunque tarde, por lo menos ahí no me voy a accidentar.",
+     "hablante": "Participante 4",
+     "ts": "00:01:10"
+    }
+   ]
+  },
+  {
+   "titulo": "El ingreso frente al costo de moverse y comer",
+   "cuerpo": "Cuando se pregunta por el gasto, el grupo coincide en que el dinero no alcanza. Se habla del pasaje y de la refacción, que es la comida ligera que se compra a media mañana o a media tarde. Cada persona describe una forma distinta de estirar el dinero.",
+   "citas": [
+    {
+     "texto": "El pasaje subió dos veces este año y el sueldo sigue igual. Uno hace cuentas y ya no sale.",
+     "hablante": "Participante 1",
+     "ts": "00:01:52"
+    },
+    {
+     "texto": "Lo que hacemos es comprar por mayor, todo junto a principio de mes, para que rinda un poco más.",
+     "hablante": "Participante 4",
+     "ts": "00:02:10"
+    }
+   ]
+  },
+  {
+   "titulo": "La seguridad en el camino y en la colonia",
+   "cuerpo": "La sensación de seguridad cambia según la hora y el lugar. Para varias personas el riesgo está más en el trayecto que en la colonia donde viven. Una participante cuenta que el alumbrado nuevo cambió el ambiente de su colonia en la noche.",
+   "citas": [
+    {
+     "texto": "Lo que da miedo es el camino, más que la colonia.",
+     "hablante": "Participante 2",
+     "ts": "00:03:25"
+    },
+    {
+     "texto": "Ya en la noche no salgo, y cuando regreso tarde le pido a mi hermano que me espere en la parada.",
+     "hablante": "Participante 4",
+     "ts": "00:02:52"
+    },
+    {
+     "texto": "En mi colonia pusieron luces nuevas y sí se nota.",
+     "hablante": "Participante 1",
+     "ts": "00:03:10"
+    }
+   ]
+  }
+ ],
+ "nota_base": "EJEMPLO FICTICIO. La transcripción y las personas fueron inventadas para probar que el plugin funciona; no corresponden a ninguna sesión. Un resumen real lleva 10 puntos y declara aquí la sesión, el lugar, la fecha, la duración, el número de participantes, de dónde salen los perfiles y qué transcripción se usó. Un grupo focal muestra cómo razonan y con qué palabras hablan quienes participaron, no cuánta gente piensa lo mismo."
+}

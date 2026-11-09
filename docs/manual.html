@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Manual de instalación y uso — resumen-gf</title>
+<style>
+  @page {
+    size: A4;
+    margin: 2.2cm 2cm 2.4cm 2cm;
+    @bottom-center {
+      content: "resumen-gf — Manual de instalación y uso";
+      font-family: 'Corbel', sans-serif;
+      font-size: 8pt;
+      color: #94a3b8;
+    }
+    @bottom-right {
+      content: counter(page) " / " counter(pages);
+      font-family: 'Corbel', sans-serif;
+      font-size: 8pt;
+      color: #94a3b8;
+    }
+  }
+  @page cover {
+    margin: 0;
+    @bottom-center { content: none; }
+    @bottom-right { content: none; }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: 'Corbel', 'Trebuchet MS', 'Helvetica Neue', Arial, sans-serif;
+    color: #0f172a;
+    font-size: 11pt;
+    line-height: 1.5;
+    margin: 0;
+  }
+  h1, h2, h3 { font-weight: 700; color: #0f172a; }
+  h1 { font-size: 20pt; margin: 0 0 6pt; }
+  h2 {
+    font-size: 15pt;
+    margin: 22pt 0 8pt;
+    padding-bottom: 5pt;
+    border-bottom: 2px solid #0E6B7C;
+    break-after: avoid;
+  }
+  h2.nueva { break-before: page; margin-top: 0; }
+  h3 { font-size: 12pt; margin: 14pt 0 4pt; color: #0E6B7C; break-after: avoid; }
+  h4 { font-size: 11pt; margin: 10pt 0 3pt; color: #334155; break-after: avoid; }
+  p { margin: 0 0 8pt; }
+  ul, ol { margin: 0 0 10pt; padding-left: 18pt; }
+  li { margin-bottom: 4pt; }
+  a { color: #0E6B7C; }
+  strong { font-weight: 700; }
+  code {
+    font-family: Consolas, 'SFMono-Regular', monospace;
+    background: #f1f5f9;
+    padding: 1pt 4pt;
+    border-radius: 3pt;
+    font-size: 9pt;
+    color: #A5342A;
+  }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 9pt 11pt;
+    border-radius: 6pt;
+    font-family: Consolas, 'SFMono-Regular', monospace;
+    font-size: 8.6pt;
+    line-height: 1.5;
+    margin: 6pt 0 12pt;
+    white-space: pre-wrap;
+    break-inside: avoid;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+  .cover {
+    page: cover;
+    height: 297mm;
+    background: linear-gradient(160deg, #06262c 0%, #0a4a55 55%, #0E6B7C 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3.5cm;
+    position: relative;
+    break-after: page;
+  }
+  .cover .eyebrow {
+    font-size: 11pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9fd8e2;
+    margin-bottom: 14pt;
+  }
+  .cover h1 { color: #ffffff; font-size: 28pt; line-height: 1.2; margin-bottom: 14pt; }
+  .cover h1 .nombre { white-space: nowrap; }
+  .cover p.sub { font-size: 12.5pt; color: #dff2f5; max-width: 12cm; }
+  .cover .footer-note {
+    position: absolute;
+    bottom: 2.2cm;
+    left: 3.5cm;
+    font-size: 9.5pt;
+    color: #9fd8e2;
+  }
+
+  .callout {
+    border-left: 4px solid #0E6B7C;
+    background: #ecf6f8;
+    padding: 8pt 12pt;
+    border-radius: 0 6pt 6pt 0;
+    margin: 10pt 0;
+    font-size: 10.3pt;
+    break-inside: avoid;
+  }
+  .callout.warning { border-left-color: #A5342A; background: #fbf0ef; }
+  .callout.field { border-left-color: #2E6A51; background: #eef6f1; }
+  .callout .label {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 8.5pt;
+    letter-spacing: 0.06em;
+    display: block;
+    margin-bottom: 3pt;
+  }
+  .callout.warning .label { color: #A5342A; }
+  .callout.field .label { color: #2E6A51; }
+  .callout:not(.warning):not(.field) .label { color: #0E6B7C; }
+
+  .step-title { display: flex; align-items: center; gap: 8pt; break-after: avoid; }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22pt;
+    height: 22pt;
+    border-radius: 50%;
+    background: #0E6B7C;
+    color: #fff;
+    font-size: 11pt;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .manual-step { break-inside: avoid; margin-bottom: 4pt; }
+
+  table { width: 100%; border-collapse: collapse; margin: 8pt 0 12pt; font-size: 9.8pt; }
+  tr { break-inside: avoid; }
+  th, td { text-align: left; padding: 5pt 8pt; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  th { background: #f1f5f9; font-weight: 700; }
+
+  figure { margin: 8pt 0 14pt; break-inside: avoid; }
+  figure img { width: 100%; border: 1px solid #cbd5e1; border-radius: 4pt; }
+  figcaption { font-size: 9pt; color: #64748b; margin-top: 4pt; }
+
+  .toc { margin: 10pt 0 0; }
+  .toc-item { display: flex; padding: 4.5pt 0; border-bottom: 1px dotted #cbd5e1; font-size: 11pt; }
+  .toc-item .num { color: #0E6B7C; font-weight: 700; width: 1.1cm; flex-shrink: 0; }
+  .toc-item .txt { flex: 1; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="eyebrow">Manual de instalación y uso</div>
+  <h1>Plugin <span class="nombre">resumen-gf</span><br>para Claude Code</h1>
+  <p class="sub">De la transcripción de un grupo focal a un resumen de 10 puntos en Word, con 2 a 4
+  citas textuales por punto, cada una verificada contra la transcripción, con el perfil de quien
+  habla y la marca de tiempo. Todo en Corbel y en negro.</p>
+  <div class="footer-note">github.com/ramonzamora89/resumen-gf-plugin · v0.3.0 · noviembre de 2026</div>
+</div>
+
+<h1>Contenido</h1>
+<div class="toc">
+  <div class="toc-item"><span class="num">1</span><span class="txt">Qué es este plugin (y qué no hace por ti)</span></div>
+  <div class="toc-item"><span class="num">2</span><span class="txt">Requisitos previos</span></div>
+  <div class="toc-item"><span class="num">3</span><span class="txt">Instalación en la terminal (Claude Code CLI)</span></div>
+  <div class="toc-item"><span class="num">4</span><span class="txt">Instalación y uso en la app Claude Desktop (pestaña Code)</span></div>
+  <div class="toc-item"><span class="num">5</span><span class="txt">Probar que funciona</span></div>
+  <div class="toc-item"><span class="num">6</span><span class="txt">Preparar la sesión que se va a resumir</span></div>
+  <div class="toc-item"><span class="num">7</span><span class="txt">Flujo de trabajo completo, paso a paso</span></div>
+  <div class="toc-item"><span class="num">8</span><span class="txt">Cómo se eligen las 2 a 4 citas</span></div>
+  <div class="toc-item"><span class="num">9</span><span class="txt">Mensajes del verificador: errores y avisos</span></div>
+  <div class="toc-item"><span class="num">10</span><span class="txt">Qué NO hacer</span></div>
+  <div class="toc-item"><span class="num">11</span><span class="txt">Solución de problemas</span></div>
+  <div class="toc-item"><span class="num">12</span><span class="txt">Referencia rápida</span></div>
+</div>
+
+<h2 id="que-es">1. Qué es este plugin (y qué no hace por ti)</h2>
+
+<p><strong>resumen-gf</strong> es un plugin de Claude Code que convierte la transcripción de un
+grupo focal en un <strong>resumen de 10 puntos</strong> en Word. Cada punto tiene un título
+formal, un párrafo en lenguaje llano y <strong>de 2 a 4 citas textuales</strong> de quienes
+participaron, con su perfil (sexo, edad y ocupación) y la marca de tiempo para volver al audio.</p>
+
+<p>Trae <strong>un skill</strong>, <code>resumen-gf</code>, con un script. Se activa solo dentro de
+una sesión de Claude Code cuando pides «el resumen de 10 puntos», «los hallazgos» o «una idea
+general» de una sesión. No hay que invocarlo con un comando especial.</p>
+
+<h3>Lo que aporta el plugin</h3>
+<ul>
+  <li><strong>Citas que de verdad se dijeron.</strong> Antes de escribir el Word, el script busca
+    cada cita, literal, en la transcripción, en el turno de esa persona y en esa marca de tiempo.
+    Si una sola no aparece, no escribe nada y dice cuál falló y qué turnos hay cerca.</li>
+  <li><strong>Varias voces por punto.</strong> Exige entre 2 y 4 citas por punto y avisa cuando
+    todas son de la misma persona o cuando una cita se repite en dos puntos.</li>
+  <li><strong>Nadie del equipo citado.</strong> Las etiquetas del equipo (moderación, notas) se
+    declaran una vez y el script rechaza cualquier cita que venga de ellas.</li>
+  <li><strong>Formato fijo.</strong> Corbel y negro en todo el documento, márgenes de 2 cm. Nadie
+    tiene que maquetar a mano.</li>
+  <li><strong>Un archivo fuente que se puede corregir.</strong> El resumen sale de un
+    <code>puntos.json</code>. Para corregir algo se edita ese archivo y se vuelve a generar; el Word
+    no se toca a mano.</li>
+</ul>
+
+<h3>Lo que no trae, a propósito</h3>
+<ul>
+  <li><strong>Ninguna transcripción, perfil ni dato de sesiones reales.</strong> Eso vive en la
+    carpeta del proyecto. El plugin solo trae un ejemplo inventado para probar la instalación.</li>
+  <li><strong>Cifras.</strong> Un grupo focal muestra cómo razonan y con qué palabras hablan quienes
+    participaron, no cuánta gente piensa algo. El resumen nunca dice «los jóvenes opinan».</li>
+  <li><strong>Revisión de contenido sensible.</strong> El plugin no decide qué testimonios pueden
+    salir del equipo.</li>
+</ul>
+
+<div class="callout">
+  <span class="label">La parte que sigue siendo humana</span>
+  Decidir si el resumen dice lo que pasó en la sala. El script garantiza que cada cita existe y
+  está bien atribuida; no garantiza que los diez puntos sean los importantes ni que el párrafo sea
+  justo con lo que se dijo. Eso lo revisa alguien que estuvo en la sesión o que escuchó el audio.
+</div>
+
+<h2 id="requisitos">2. Requisitos previos</h2>
+
+<table>
+  <tr><th>Qué</th><th>Para qué</th><th>Cómo verificar</th></tr>
+  <tr><td><strong>Claude Code</strong> (CLI o app Desktop)</td><td>Ejecutar el skill</td><td><code>claude --version</code></td></tr>
+  <tr><td><strong>Python 3</strong></td><td>Correr el script que verifica y arma el Word</td><td><code>python --version</code> (Mac: <code>python3</code>)</td></tr>
+  <tr><td><strong>python-docx</strong></td><td>Escribir el <code>.docx</code></td><td><code>python -c "import docx"</code></td></tr>
+  <tr><td><strong>Fuente Corbel</strong></td><td>Ver el Word como se diseñó</td><td>Viene con Windows y con Microsoft Office</td></tr>
+</table>
+
+<p>Para instalar <code>python-docx</code>:</p>
+
+<pre><code>python -m pip install python-docx        # Windows
+python3 -m pip install python-docx       # Mac</code></pre>
+
+
+<p>No hay claves de API que configurar. El script corre en tu computadora y no envía la
+transcripción a ningún servicio; la lectura y redacción la hace Claude dentro de tu sesión.</p>
+
+<h2 id="instalacion-cli">3. Instalación en la terminal (Claude Code CLI)</h2>
+
+<p>El repositorio funciona como su propio <em>marketplace</em> de Claude Code: no tiene que estar
+en ningún catálogo de Anthropic, basta con el manifiesto <code>.claude-plugin/marketplace.json</code>
+en la raíz, que ya tiene.</p>
+
+<h3>Desde el repositorio en GitHub</h3>
+<pre><code>/plugin marketplace add ramonzamora89/resumen-gf-plugin
+/plugin install resumen-gf@resumen-gf</code></pre>
+
+<p>Lo mismo, fuera de una sesión, desde la terminal:</p>
+<pre><code>claude plugin marketplace add ramonzamora89/resumen-gf-plugin
+claude plugin install resumen-gf@resumen-gf</code></pre>
+
+<h3>Desde una carpeta local, sin pasar por GitHub</h3>
+<p>Si alguien te pasa la carpeta del plugin (por ejemplo, en una memoria USB o una carpeta
+compartida), el marketplace también se registra desde el disco:</p>
+<pre><code>/plugin marketplace add E:\resumen-gf-plugin
+/plugin install resumen-gf@resumen-gf</code></pre>
+
+<p>El nombre después de <code>@</code> es el del <strong>marketplace</strong> (definido en
+<code>marketplace.json</code>), que aquí coincide con el del plugin. Verifica con
+<code>/plugin</code> que aparezca instalado y habilitado.</p>
+
+<h3>Qué queda en disco</h3>
+<table>
+  <tr><th>Qué</th><th>Dónde</th></tr>
+  <tr><td>Registro de marketplaces conocidos</td><td><code>~/.claude/plugins/known_marketplaces.json</code></td></tr>
+  <tr><td>Clon del marketplace</td><td><code>~/.claude/plugins/marketplaces/resumen-gf/</code></td></tr>
+  <tr><td>Copia instalada del plugin</td><td><code>~/.claude/plugins/cache/resumen-gf/resumen-gf/0.3.0/</code></td></tr>
+</table>
+<p>En Windows, <code>~</code> es tu carpeta de usuario: <code>C:\Users\&lt;tu usuario&gt;</code>.</p>
+
+<h3>Actualizar y desinstalar</h3>
+<pre><code>/plugin marketplace update resumen-gf   # trae los cambios del repositorio
+/plugin                                 # habilitar, deshabilitar o desinstalar</code></pre>
+
+<h3>Alternativa sin instalar (sesión suelta)</h3>
+<pre><code>claude --plugin-dir E:\resumen-gf-plugin</code></pre>
+<p>Carga el plugin solo para esa sesión. Sirve mientras se edita el propio plugin: los cambios se
+ven de inmediato, sin reinstalar.</p>
+
+<h2 id="desktop">4. Instalación y uso en la app Claude Desktop (pestaña Code)</h2>
+
+<p>La app de escritorio de Claude tiene tres pestañas: <strong>Chat</strong> para conversaciones,
+<strong>Cowork</strong> para trabajo largo con agentes y <strong>Code</strong>, que es Claude Code
+con interfaz gráfica. Todo lo de este manual corre en la pestaña <strong>Code</strong>.</p>
+
+<div class="callout warning">
+  <span class="label">La confusión más cara de esta sección</span>
+  <p style="margin:0">En la barra lateral hay un menú <strong>Customize &rarr; Plugins</strong>. Ese
+  instalador es para <strong>Chat y Cowork</strong>: su configuración se sincroniza con tu cuenta de
+  claude.ai y <strong>no</strong> alimenta las sesiones de la pestaña Code.</p>
+  <p style="margin:6pt 0 0">Los plugins de Claude Code, este incluido, se instalan
+  <strong>desde dentro de la sesión</strong> de la pestaña Code, y viven en <code>~/.claude</code>,
+  compartido con la CLI.</p>
+</div>
+
+<div class="manual-step">
+  <div class="step-title"><span class="step-num">1</span><h4 style="margin:0">Abrir una sesión</h4></div>
+  <p>Pestaña <strong>Code</strong> &rarr; nueva sesión &rarr; elegir la <strong>carpeta del
+  proyecto</strong> donde están las transcripciones (normalmente, la que contiene la carpeta
+  <code>transcripciones/</code>).</p>
+</div>
+
+<div class="manual-step">
+  <div class="step-title"><span class="step-num">2</span><h4 style="margin:0">Registrar el marketplace</h4></div>
+  <pre><code>/plugin marketplace add ramonzamora89/resumen-gf-plugin</code></pre>
+  <p>Si ya lo agregaste desde la terminal, este paso se salta: el registro es el mismo archivo.</p>
+</div>
+
+<div class="manual-step">
+  <div class="step-title"><span class="step-num">3</span><h4 style="margin:0">Instalar</h4></div>
+  <pre><code>/plugin install resumen-gf@resumen-gf</code></pre>
+  <p>Queda disponible en todas las sesiones de Code y de la CLI.</p>
+</div>
+
+<h2 id="probar">5. Probar que funciona</h2>
+
+<p>El plugin trae una transcripción y un resumen <strong>inventados</strong>, de cuatro personas y
+cuatro minutos, para comprobar la instalación sin tocar datos reales. En una sesión de Claude Code,
+pide:</p>
+
+<pre><code>Corre el ejemplo del plugin resumen-gf</code></pre>
+
+<p>O córrelo a mano desde la carpeta instalada:</p>
+
+<pre><code>python -I "&lt;carpeta del plugin&gt;/skills/resumen-gf/scripts/generar_resumen.py" ^
+       "&lt;carpeta del plugin&gt;/skills/resumen-gf/ejemplo/puntos.json"</code></pre>
+
+<p>La salida correcta es:</p>
+
+<pre><code>AVISO: hay 3 puntos, no 10
+Citas verificadas: 8 en 3 puntos, contra turns_ts.json (limpia).
+OK -&gt; ...\ejemplo\Resumen 10 puntos - ejemplo ficticio.docx</code></pre>
+
+<p>El aviso de los 3 puntos es normal: el ejemplo es corto a propósito. Si sale eso, el plugin,
+Python y <code>python-docx</code> están bien instalados.</p>
+
+<figure>
+  <img src="img/ejemplo-resumen.png" alt="Primera página del resumen de ejemplo">
+  <figcaption>Así se ve el resumen generado con el ejemplo ficticio: título, párrafo y de 2 a 3 citas
+  por punto, cada una con perfil y marca de tiempo.</figcaption>
+</figure>
+
+<h2 id="preparar">6. Preparar la sesión que se va a resumir</h2>
+
+<p>El plugin no exige una estructura de carpetas, pero sí necesita tres cosas claras antes de
+empezar: qué transcripción usar, quién es del equipo y cómo se llama a cada participante en el
+documento.</p>
+
+<h3>Qué transcripción usar</h3>
+<table>
+  <tr><th>Archivo</th><th>Qué es</th><th>Cómo sale el resumen</th></tr>
+  <tr><td><code>turns_ts.json</code></td><td>Transcripción limpia, revisada</td><td>Definitivo</td></tr>
+  <tr><td>Transcripción <code>.docx</code></td><td>El Word de la transcripción, con párrafos <code>Hablante [HH:MM:SS]: texto</code></td><td>Definitivo, o preliminar si la limpieza no está hecha</td></tr>
+  <tr><td><code>merged.json</code></td><td>Transcripción automática, sin limpiar</td><td><strong>Preliminar</strong>, con aviso debajo del título</td></tr>
+</table>
+
+<p>Si existe la limpia, se usa la limpia. La cruda sirve para tener una idea general del grupo
+mientras la limpieza avanza, pero sus citas no salen del equipo sin escucharlas en el audio.</p>
+
+<h3>Quién es del equipo</h3>
+<p>El rol del equipo cambia de una sesión a otra: quien modera en una puede tomar notas en otra.
+Dile a Claude qué etiquetas son del equipo (o que lo tome del <code>cfg.json</code> de la sesión).
+Esas voces nunca se citan.</p>
+
+<h3>Perfiles de quienes participaron</h3>
+<p>En el resumen <strong>nunca se imprimen nombres</strong>. Cada etiqueta de la transcripción
+(«Participante 3», «Hablante 4») se traduce a un perfil: «Mujer, 31 años, ingeniera ambiental».
+Esa correspondencia sale del inventario de participantes y no se comparte fuera del equipo. Una
+etiqueta sin perfil sale como «Participante (Hablante N en la transcripción)».</p>
+
+<h2 id="flujo" class="nueva">7. Flujo de trabajo completo, paso a paso</h2>
+
+<p>En el uso normal no corres nada a mano: pides el resumen y revisas el resultado. Lo que sigue es
+lo que pasa por dentro, para poder intervenir cuando algo no sale bien.</p>
+
+<h3>Paso 1 · Pedir el resumen</h3>
+<pre><code>Haz el resumen de 10 puntos del GF3 con la transcripción de
+transcripciones/gf3_mujeres_25-34. Del equipo son «Moderador» y «Asistente».</code></pre>
+
+<h3>Paso 2 · Claude lee y escribe <code>puntos.json</code></h3>
+<p>Claude lee la transcripción completa y escribe, en la carpeta de la sesión, un
+<code>puntos.json</code> con los diez puntos: título, párrafo y de 2 a 4 citas por punto, cada una
+con la etiqueta de quien habla y la marca de tiempo de su turno.</p>
+
+<pre><code>{
+  "titulo": "Resumen de 10 puntos clave del grupo focal ...",
+  "fuente": "turns_ts.json",
+  "equipo": ["Moderador"],
+  "perfiles": {"Participante 1": "Mujer, 29 años, vendedora"},
+  "puntos": [
+    {
+      "titulo": "El tiempo perdido en el transporte",
+      "cuerpo": "De 3 a 5 frases en lenguaje llano.",
+      "citas": [
+        {"texto": "Uno pierde como tres horas al día en el bus...",
+         "hablante": "Participante 2", "ts": "00:00:31"},
+        {"texto": "Prefiero el bus aunque tarde...",
+         "hablante": "Participante 4", "ts": "00:01:10"}
+      ]
+    }
+  ],
+  "nota_base": "Sesión, lugar, fecha, duración y participantes..."
+}</code></pre>
+
+<h3>Paso 3 · Verificación</h3>
+<p>El script comprueba cada cita contra la transcripción. Mientras ajusta las citas, Claude lo corre
+solo en modo verificación:</p>
+<pre><code>python -I generar_resumen.py puntos.json --solo-verificar</code></pre>
+<p>Si algo falla, el script lo dice y no escribe el documento. Claude corrige y vuelve a correrlo
+hasta que todo pase (ver §9).</p>
+
+<h3>Paso 4 · Generar el Word</h3>
+<pre><code>python -I generar_resumen.py puntos.json</code></pre>
+<p>Queda junto a la transcripción:</p>
+<pre><code>transcripciones/gf3_mujeres_25-34/
+  puntos.json                                  &lt;- la fuente del resumen
+  Resumen 10 puntos - GF3 mujeres 25-34.docx   &lt;- el documento</code></pre>
+<p>Si es preliminar, el nombre termina en <code>(preliminar).docx</code>, para no confundirlo con el
+definitivo.</p>
+
+<h3>Paso 5 · Revisar y corregir</h3>
+<p>Lee el resumen. Para cambiar algo, pídeselo a Claude («cambia la segunda cita del punto 4 por
+una de alguien que no esté de acuerdo») o edita <code>puntos.json</code>, y se vuelve a generar.
+<strong>El Word no se edita a mano</strong>: la siguiente vez que se genere, esos cambios se pierden.</p>
+
+<div class="callout field">
+  <span class="label">Antes de que el documento salga del equipo</span>
+  Hay que decidir cómo se tratan los testimonios sensibles (violencia, muertes, salud) y los
+  nombres de terceros que aparezcan dentro de las citas. El plugin no lo decide.
+</div>
+
+<h2 id="citas">8. Cómo se eligen las 2 a 4 citas</h2>
+
+<p>Las citas están para que quien lee vea el punto dicho con las palabras de quienes participaron,
+y en voces distintas. Estas son las reglas que sigue el skill, y las que conviene revisar al leer
+el resultado.</p>
+
+<ul>
+  <li><strong>Cada cita aporta algo que las otras no traen</strong>: otra persona, otro matiz, otro
+    ejemplo o un desacuerdo. Dos citas que dicen lo mismo con otras palabras no suman: basta una.</li>
+  <li><strong>Voces distintas.</strong> Si todas las citas de un punto son de la misma persona, el
+    párrafo tiene que decir «una participante», no «el grupo».</li>
+  <li><strong>Si hubo desacuerdo, se cita.</strong> No se presenta un consenso que no hubo.</li>
+  <li><strong>Orden:</strong> primero la cita que mejor dice el punto; después las que lo matizan o
+    lo contradicen.</li>
+  <li><strong>Extensión:</strong> de una a tres frases por cita. Los cortes se marcan con
+    <code>(…)</code>.</li>
+  <li><strong>Literales.</strong> Solo se corrige la puntuación.</li>
+  <li><strong>Si no hay dos citas genuinas, el punto es débil.</strong> Se fusiona con otro o se
+    cambia. Nunca se rellena con una cita que no diga el punto, ni con palabras del equipo.</li>
+</ul>
+
+<div class="callout">
+  <span class="label">Por qué 2 a 4 y no una</span>
+  Con una sola cita, el lector no distingue si el punto lo sostuvo una persona o la mesa entera.
+  Con dos a cuatro, y de personas distintas, se ve el rango de lo que se dijo. Más de cuatro ya no
+  agrega: repite.
+</div>
+
+<h2 id="mensajes" class="nueva">9. Mensajes del verificador: errores y avisos</h2>
+
+<p>Los <strong>errores</strong> frenan el documento: no se escribe nada hasta corregirlos. Los
+<strong>avisos</strong> no lo frenan, pero hay que leerlos.</p>
+
+<table>
+  <tr><th>Mensaje</th><th>Qué significa</th><th>Qué hacer</th></tr>
+  <tr><td><code>ERROR: punto 2: tiene 1 citas; deben ser de 2 a 4</code></td><td>El punto tiene menos o más citas de las permitidas</td><td>Agregar o quitar citas, o fusionar el punto si no hay una segunda cita genuina</td></tr>
+  <tr><td><code>ERROR: ... el texto no aparece literal desde 00:12:04</code></td><td>La cita no está, tal cual, en los 3 minutos que siguen a ese turno</td><td>Copiarla literal de la transcripción; revisar que los cortes <code>(…)</code> vayan en orden</td></tr>
+  <tr><td><code>ERROR: ... no hay turno de «Participante 2» en 00:03:26; cerca: [...]</code></td><td>La marca de tiempo no es la del turno de esa persona</td><td>Usar una de las marcas que el mensaje muestra cerca</td></tr>
+  <tr><td><code>ERROR: ... «Moderador» es del equipo y no se cita</code></td><td>La cita es de una etiqueta del equipo</td><td>Cambiarla por la de alguien que participó</td></tr>
+  <tr><td><code>AVISO: punto 4: todas las citas son de «Participante 1»</code></td><td>Una sola voz sostiene el punto</td><td>Sumar otra voz si existe; si no, que el párrafo no generalice</td></tr>
+  <tr><td><code>AVISO: ... repite una cita ya usada en el punto 2</code></td><td>La misma cita aparece en dos puntos</td><td>Dejarla en uno solo</td></tr>
+  <tr><td><code>AVISO: ... palabras con baja confianza</code></td><td>Solo en la cruda: el reconocimiento de voz no estaba seguro de esas palabras</td><td>Escuchar ese tramo del audio antes de citarlo fuera del equipo</td></tr>
+  <tr><td><code>AVISO: ... sin perfil; se rotula como participante</code></td><td>Esa etiqueta no tiene perfil en <code>perfiles</code></td><td>Agregar el perfil si se conoce; no adivinarlo</td></tr>
+  <tr><td><code>AVISO: hay 7 puntos, no 10</code></td><td>El resumen no tiene diez puntos</td><td>Completar o justificar</td></tr>
+</table>
+
+<h2 id="no-hacer">10. Qué NO hacer</h2>
+<ul>
+  <li><strong>No editar el Word a mano.</strong> Se corrige <code>puntos.json</code> y se vuelve a
+    generar. Si no, el siguiente cambio borra el anterior.</li>
+  <li><strong>No escribir nombres reales en el resumen.</strong> Solo perfiles. Los nombres viven en
+    el inventario de participantes y no salen del equipo.</li>
+  <li><strong>No generalizar.</strong> «Entre quienes participaron», «varias personas», «una
+    participante». Nunca «los jóvenes piensan» ni porcentajes.</li>
+  <li><strong>No rellenar para llegar a dos citas.</strong> Un punto sin dos citas genuinas se
+    fusiona o se cambia.</li>
+  <li><strong>No circular un resumen preliminar fuera del equipo</strong> sin cotejar cada cita
+    contra el audio.</li>
+  <li><strong>No subir transcripciones ni perfiles al repositorio del plugin.</strong> El plugin es
+    la herramienta; los datos se quedan en la carpeta del proyecto.</li>
+</ul>
+
+<h2 id="problemas">11. Solución de problemas</h2>
+
+<h3><code>/plugin marketplace add</code> falla o no encuentra el repositorio</h3>
+<p>Revisa que el nombre esté bien escrito: <code>ramonzamora89/resumen-gf-plugin</code>. Si la
+computadora no tiene salida a GitHub, instálalo desde una copia local de la carpeta (§3).</p>
+
+<h3><code>/plugin install</code> dice que no encuentra el plugin</h3>
+<p>El nombre después de <code>@</code> es el del marketplace: <code>resumen-gf@resumen-gf</code>.</p>
+
+<h3>Instalé el plugin en la app Desktop y el skill no aparece en la pestaña Code</h3>
+<p>Casi seguro se instaló desde <strong>Customize &rarr; Plugins</strong>, que alimenta Chat y
+Cowork, no la pestaña Code. Reinstálalo desde dentro de una sesión de Code (§4).</p>
+
+<h3><code>Falta python-docx. Instálalo con: python -m pip install python-docx</code></h3>
+<p>Corre ese comando con el mismo Python que usa Claude. Si tienes varios Python (por ejemplo, uno
+de conda), pídele a Claude que use el del ambiente donde instalaste la librería.</p>
+
+<h3><code>python</code> no se reconoce como comando</h3>
+<p>En Mac el comando es <code>python3</code>. En Windows, instala Python desde python.org y marca
+«Add Python to PATH» durante la instalación.</p>
+
+<h3>El Word se ve en otra fuente</h3>
+<p>La computadora no tiene Corbel. Viene con Windows y con Microsoft Office; en una Mac sin Office,
+Word o Pages la reemplazan por otra. El documento sigue pidiendo Corbel: se verá bien en cualquier
+equipo que la tenga.</p>
+
+<h3>Todas las citas fallan con «no hay turno»</h3>
+<p>Casi siempre es la fuente equivocada: las marcas de tiempo cambian entre la transcripción cruda y
+la limpia, porque la limpieza reacomoda los turnos. Revisa que <code>fuente</code> en
+<code>puntos.json</code> sea la transcripción de la que salieron las citas.</p>
+
+<h3>Una cita que sí se dijo falla con «no aparece literal»</h3>
+<p>La diarización (la separación automática de voces) a veces parte una frase entre dos personas.
+El script ya busca en los 3 minutos siguientes, pero si parte de la frase quedó con otra etiqueta,
+cita solo el fragmento que sí está en el turno de quien habla, o marca el corte con
+<code>(…)</code>.</p>
+
+<h3>Git dice <code>detected dubious ownership</code> al trabajar en el plugin</h3>
+<p>Pasa cuando la carpeta vive en un disco con formato exFAT, que no guarda quién es el dueño de
+cada archivo. Se resuelve una vez con
+<code>git config --global --add safe.directory E:/resumen-gf-plugin</code>.</p>
+
+<h2 id="referencia">12. Referencia rápida</h2>
+
+<h3>Comandos</h3>
+<pre><code># Instalación
+/plugin marketplace add ramonzamora89/resumen-gf-plugin   # o la ruta local
+/plugin install resumen-gf@resumen-gf
+/plugin marketplace update resumen-gf
+
+# Uso normal: pedir el resumen de 10 puntos de una sesión, en el chat.
+
+# Uso directo del script
+SK=~/.claude/plugins/cache/resumen-gf/resumen-gf/0.3.0/skills/resumen-gf
+
+python -I "$SK/scripts/generar_resumen.py" "$SK/ejemplo/puntos.json"        # prueba
+python -I "$SK/scripts/generar_resumen.py" puntos.json --solo-verificar
+python -I "$SK/scripts/generar_resumen.py" puntos.json</code></pre>
+
+<h3>Campos de <code>puntos.json</code></h3>
+<table>
+  <tr><th>Campo</th><th>Qué es</th></tr>
+  <tr><td><code>titulo</code>, <code>subtitulo</code></td><td>Encabezado del documento</td></tr>
+  <tr><td><code>fuente</code></td><td><code>turns_ts.json</code>, <code>merged.json</code> o la transcripción <code>.docx</code>. Rutas relativas a la carpeta de <code>puntos.json</code></td></tr>
+  <tr><td><code>salida</code></td><td>El <code>.docx</code> que se escribe</td></tr>
+  <tr><td><code>estado</code></td><td><code>revisado</code> o <code>preliminar</code>. Con <code>merged.json</code> es siempre preliminar</td></tr>
+  <tr><td><code>equipo</code></td><td>Etiquetas que nunca se citan</td></tr>
+  <tr><td><code>perfiles</code></td><td>Etiqueta de la transcripción &rarr; perfil impreso</td></tr>
+  <tr><td><code>citas_min</code>, <code>citas_max</code></td><td>Opcionales. Por defecto 2 y 4</td></tr>
+  <tr><td><code>puntos</code></td><td>Diez puntos con <code>titulo</code>, <code>cuerpo</code> y <code>citas</code> (<code>texto</code>, <code>hablante</code>, <code>ts</code>)</td></tr>
+  <tr><td><code>nota_base</code></td><td>Sesión, lugar, fecha, duración, participantes, fuente de los perfiles y transcripción usada</td></tr>
+</table>
+
+<h3>Contenido del plugin</h3>
+<table>
+  <tr><th>Archivo</th><th>Qué hace</th></tr>
+  <tr><td><code>skills/resumen-gf/SKILL.md</code></td><td>Reglas de redacción, de selección de citas y de atribución</td></tr>
+  <tr><td><code>skills/resumen-gf/scripts/generar_resumen.py</code></td><td>Verifica las citas y arma el Word</td></tr>
+  <tr><td><code>skills/resumen-gf/references/formato_puntos.md</code></td><td>Formato de <code>puntos.json</code> y de las transcripciones</td></tr>
+  <tr><td><code>skills/resumen-gf/ejemplo/</code></td><td>Transcripción y resumen ficticios para probar</td></tr>
+</table>
+
+<p style="margin-top:16pt; color:#64748b; font-size:9pt">
+Plugin bajo licencia MIT · <a href="https://github.com/ramonzamora89/resumen-gf-plugin">github.com/ramonzamora89/resumen-gf-plugin</a><br>
+Este manual se regenera con <code>python docs/build_manual.py</code> desde <code>docs/manual.html</code>.
+</p>
+
+</body>
+</html>

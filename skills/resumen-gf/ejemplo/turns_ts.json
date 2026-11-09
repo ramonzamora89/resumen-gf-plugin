@@ -1,0 +1,86 @@
+[
+ {
+  "i": 0,
+  "label": "Moderador",
+  "ts": "00:00:05",
+  "text": "Buenos días. Para empezar, ¿cómo llegan ustedes todos los días al trabajo o al estudio?"
+ },
+ {
+  "i": 1,
+  "label": "Participante 1",
+  "ts": "00:00:14",
+  "text": "Yo agarro dos buses. Salgo a las cinco de la mañana y aun así llego tarde, porque el tráfico en la entrada a la ciudad no perdona."
+ },
+ {
+  "i": 2,
+  "label": "Participante 2",
+  "ts": "00:00:31",
+  "text": "Lo mío es igual. Uno pierde como tres horas al día en el bus, que es tiempo que podría estar estudiando o con la familia."
+ },
+ {
+  "i": 3,
+  "label": "Participante 3",
+  "ts": "00:00:52",
+  "text": "Yo me compré una moto por eso mismo. Es más peligroso, sí, pero llego en media hora y ya no dependo del bus."
+ },
+ {
+  "i": 4,
+  "label": "Participante 4",
+  "ts": "00:01:10",
+  "text": "A mí sí me da miedo la moto. Prefiero el bus aunque tarde, por lo menos ahí no me voy a accidentar."
+ },
+ {
+  "i": 5,
+  "label": "Moderador",
+  "ts": "00:01:28",
+  "text": "¿Y qué pasa con el gasto? ¿Les alcanza?"
+ },
+ {
+  "i": 6,
+  "label": "Participante 2",
+  "ts": "00:01:35",
+  "text": "No alcanza. Entre pasaje y refacción se me va casi la cuarta parte de lo que gano a la semana."
+ },
+ {
+  "i": 7,
+  "label": "Participante 1",
+  "ts": "00:01:52",
+  "text": "El pasaje subió dos veces este año y el sueldo sigue igual. Uno hace cuentas y ya no sale."
+ },
+ {
+  "i": 8,
+  "label": "Participante 4",
+  "ts": "00:02:10",
+  "text": "En mi casa lo que hacemos es comprar por mayor, todo junto a principio de mes, para que rinda un poco más."
+ },
+ {
+  "i": 9,
+  "label": "Participante 3",
+  "ts": "00:02:27",
+  "text": "Yo dejé de comer afuera. Llevo mi comida desde la casa todos los días, es la única forma."
+ },
+ {
+  "i": 10,
+  "label": "Moderador",
+  "ts": "00:02:45",
+  "text": "Y cuando piensan en el barrio donde viven, ¿se sienten seguros?"
+ },
+ {
+  "i": 11,
+  "label": "Participante 4",
+  "ts": "00:02:52",
+  "text": "De día sí. Pero ya en la noche no salgo, y cuando regreso tarde le pido a mi hermano que me espere en la parada."
+ },
+ {
+  "i": 12,
+  "label": "Participante 1",
+  "ts": "00:03:10",
+  "text": "En mi colonia pusieron luces nuevas y sí se nota. Ya hay más gente en la calle en la noche."
+ },
+ {
+  "i": 13,
+  "label": "Participante 2",
+  "ts": "00:03:25",
+  "text": "Lo que da miedo es el camino, más que la colonia. En el bus es donde uno se siente más expuesto."
+ }
+]

@@ -1,0 +1,14 @@
+{
+  "name": "resumen-gf",
+  "owner": {
+    "name": "Ramon Zamora"
+  },
+  "description": "Marketplace del equipo con el plugin resumen-gf: resúmenes de 10 puntos de grupos focales con citas verificadas.",
+  "plugins": [
+    {
+      "name": "resumen-gf",
+      "source": "./",
+      "description": "Resumen de 10 puntos de un grupo focal, con 2 a 4 citas verificadas por punto, en .docx con Corbel."
+    }
+  ]
+}
