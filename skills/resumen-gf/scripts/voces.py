@@ -19,14 +19,29 @@ Identificar de oído quién habla cuando la transcripción limpia no distingue a
                python voces.py revisar ALINEACION.json RESPUESTAS.txt --limpia LIMPIA.docx
                       [--puntos puntos.json] [--llega LETRA=HH:MM:SS ...]
   5. aplicar   Igual que revisar y, si no hay errores, escribe «voz» y «perfiles» en puntos.json.
+  6. transcripcion  Copia de la limpia con el código de participante en cada turno identificado,
+               y la tabla de perfiles con las columnas «Código» y «Turnos».
+               python voces.py transcripcion ALINEACION.json RESPUESTAS.txt --limpia LIMPIA.docx
+                      --salida "LIMPIA con participantes.docx"
 
-Criterio de confianza: un turno tiene voz si sus palabras coinciden con la grabación en al menos
-el 60 % (cobertura) y al menos el 90 % de esas palabras las dice una sola voz (pureza).
+Respuestas: las líneas que copia la página («voz:SPEAKER_08 = C», «cita:00:43:54 = C») más, a mano,
+«turno:HH:MM:SS = C  # motivo» para turnos sueltos, como las presentaciones, donde la persona dice
+quién es. Las líneas «cita» y «turno» mandan sobre la separación de voces.
+
+Criterio de confianza: un turno tiene voz si tiene al menos 4 palabras, sus palabras coinciden con
+la grabación en al menos el 60 % (cobertura) y al menos el 90 % de esas palabras las dice una sola
+voz (pureza).
 """
 import argparse, collections, difflib, html, json, re, statistics, subprocess, sys
 from pathlib import Path
 
 COB, PUR = 0.6, 0.9
+MIN_PAL = 4  # con menos palabras («Mis hijos») la coincidencia por texto puede caer en otra frase igual
+
+
+def confiable(t):
+    """Turno cuya voz se puede usar: coincide con la grabación y lo dice una sola voz."""
+    return t["cov"] >= COB and t["pure"] >= PUR and len(norm(t["text"])) >= MIN_PAL
 TURNO = re.compile(r"^\s*([^:\[\]]{1,40}?)\s*:\s*\[(\d\d:\d\d:\d\d)\]\s*(.*)$", re.S)
 TURNO2 = re.compile(r"^\s*(.+?)\s*\[(\d\d:\d\d:\d\d)\]\s*:\s*(.*)$", re.S)
 
@@ -359,7 +374,7 @@ act();txt();
 def leer_respuestas(ruta):
     r = {}
     for linea in Path(ruta).read_text(encoding="utf-8-sig").splitlines():
-        m = re.match(r"^\s*((?:voz|cita):[^=]+?)\s*=\s*([^·]+?)\s*(?:·\s*nota:\s*(.*))?$", linea)
+        m = re.match(r"^\s*((?:voz|cita|turno):[^=#]+?)\s*=\s*([^·#]+?)\s*(?:·\s*nota:\s*([^#]*))?(?:#.*)?$", linea)
         if m and m.group(2) != "(sin elegir)":
             r[m.group(1)] = (m.group(2).strip(), (m.group(3) or "").strip())
     return r
@@ -378,7 +393,9 @@ def cmd_revisar(a, aplicar=False):
         llega[l.strip()] = ts.strip()
 
     voz_a = {k[4:]: v[0] for k, v in R.items() if k.startswith("voz:")}
-    cita_a = {k[5:]: v[0] for k, v in R.items() if k.startswith("cita:")}
+    # «cita:» viene de la página; «turno:» se agrega a mano para turnos sueltos, por ejemplo las
+    # presentaciones, donde la persona dice quién es. Los dos se tratan igual y mandan sobre la voz.
+    cita_a = {k.split(":", 1)[1]: v[0] for k, v in R.items() if k.startswith(("cita:", "turno:"))}
     for v, l in list(voz_a.items()) + list(cita_a.items()):
         if l not in por_letra and l not in ("MEZCLA", "EQUIPO", "NOSE"):
             errores.append(f"«{l}» no es una fila de la tabla de perfiles")
@@ -391,7 +408,7 @@ def cmd_revisar(a, aplicar=False):
             errores.append(f"el perfil {l} está en {len(vs)} voces: {', '.join(vs)}. Una persona no puede tener dos "
                            f"voces salvo que la separación la haya partido; si es así, decirlo en la nota")
 
-    conf = [t for t in T if t["label"] == a.participantes and t["cov"] >= COB and t["pure"] >= PUR and len(norm(t["text"])) >= 4]
+    conf = [t for t in T if t["label"] == a.participantes and confiable(t)]
     dichos = collections.defaultdict(list)  # letra -> turnos
     for t in conf:
         l = voz_a.get(t["voz"])
@@ -431,7 +448,7 @@ def cmd_revisar(a, aplicar=False):
             c.pop("voz", None)
             i = cita_turno(T, c)
             l = cita_a.get(c["ts"])
-            if l is None and i is not None and T[i]["cov"] >= COB and T[i]["pure"] >= PUR:
+            if l is None and i is not None and confiable(T[i]):
                 v = T[i]["voz"]
                 l = voz_a.get(v)
                 if l in ("MEZCLA", "NOSE", None):
@@ -449,6 +466,90 @@ def cmd_revisar(a, aplicar=False):
     json.dump(P, open(a.puntos, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"\nOK: {n_perf} citas con perfil escritas en {a.puntos}. Revisar la redacción de los perfiles "
           "(salen tal como vienen en la tabla) antes de generar el resumen.")
+
+
+# ---------------------------------------------------------------- 6. transcripcion
+def cmd_transcripcion(a):
+    """Copia de la limpia con el código de participante en cada turno identificado."""
+    import copy, docx
+    from docx.oxml.ns import qn
+    from docx.shared import Pt
+    T = json.load(open(a.alineacion, encoding="utf-8"))["turnos"]
+    R = leer_respuestas(a.respuestas)
+    voz_a = {k[4:]: v[0] for k, v in R.items() if k.startswith("voz:")}
+    turno_a = {k.split(":", 1)[1]: v[0] for k, v in R.items() if k.startswith(("cita:", "turno:"))}
+    d = docx.Document(a.limpia)
+    tabla = next((tb for tb in d.tables if any("edad" in c.text.lower() for c in tb.rows[0].cells)), None)
+    if tabla is None:
+        sys.exit("La limpia no tiene tabla de perfiles con columna «Edad».")
+    enc = [c.text.strip().lower() for c in tabla.rows[0].cells]
+    tiene_codigo = any("código" in c for c in enc)
+    _, perfiles = leer_limpia(a.limpia)
+    letras = [p["letra"] for p in perfiles]
+    codigo = {l: (l if tiene_codigo else f"P{k + 1}") for k, l in enumerate(letras)}
+
+    parrafos = [p for p in d.paragraphs if (TURNO.match(p.text.strip()) or TURNO2.match(p.text.strip()))]
+    if len(parrafos) != len(T):
+        sys.exit(f"La alineación ({len(T)} turnos) no corresponde a esta limpia ({len(parrafos)}): vuelve a alinear.")
+    conteo, sin_id = collections.Counter(), 0
+    for p, t in zip(parrafos, T):
+        if t["label"] != a.participantes:
+            continue
+        l = turno_a.get(t["ts"])
+        if l is None and confiable(t):
+            l = voz_a.get(t["voz"])
+        if l not in codigo:
+            sin_id += 1
+            continue
+        run = next((r for r in p.runs if r.text.strip()), None)
+        if run is None or not run.text.strip().startswith(a.participantes):
+            sys.exit(f"No encontré la etiqueta «{a.participantes}» al inicio del turno de {t['ts']}.")
+        run.text = run.text.replace(a.participantes, codigo[l], 1)
+        conteo[codigo[l]] += 1
+
+    # columnas nuevas con el formato de las celdas existentes: «Código» (si falta) y «Turnos»
+    tbl = tabla._tbl
+    grid = tbl.find(qn("w:tblGrid"))
+    cols = grid.findall(qn("w:gridCol"))
+    nuevas = [("fin", 1300)] + ([] if tiene_codigo else [("inicio", 1100)])
+    for lado, ancho in nuevas:
+        gc = copy.deepcopy(cols[-1] if lado == "fin" else cols[0])
+        gc.set(qn("w:w"), str(ancho))
+        grid.append(gc) if lado == "fin" else grid.insert(0, gc)
+        for tr in tbl.findall(qn("w:tr")):
+            tcs = tr.findall(qn("w:tc"))
+            tc = copy.deepcopy(tcs[-1] if lado == "fin" else tcs[0])
+            w = tc.find(qn("w:tcPr"))
+            if w is not None and w.find(qn("w:tcW")) is not None:
+                w.find(qn("w:tcW")).set(qn("w:w"), str(ancho))
+            (tcs[-1].addnext if lado == "fin" else tcs[0].addprevious)(tc)
+    for k, row in enumerate(tabla.rows):
+        textos = [(row.cells[-1], "Turnos" if k == 0 else str(conteo[codigo[letras[k - 1]]]))]
+        if not tiene_codigo:
+            textos.append((row.cells[0], "Código" if k == 0 else codigo[letras[k - 1]]))
+        for celda, texto in textos:
+            par = celda.paragraphs[0]
+            if not par.runs:
+                par.add_run("")
+            for r in par.runs[1:]:
+                r._r.getparent().remove(r._r)
+            par.runs[0].text = texto
+
+    ref = next((r for r in tabla.rows[1].cells[1].paragraphs[0].runs if r.text.strip()), None)
+    nota = d.add_paragraph()
+    tbl.addnext(nota._p)
+    r = nota.add_run(
+        "Código de participante asignado por el equipo: se separaron las voces de la grabación, se alineó "
+        "cada turno con esa separación por su texto y una persona del equipo identificó de oído cada voz; "
+        "las presentaciones se asignaron por lo que cada persona dice de sí misma. «Turnos» cuenta los turnos "
+        f"con código. Los {sin_id} turnos que siguen como «{a.participantes}» no se pudieron identificar con "
+        "seguridad (sobre todo, intervenciones muy cortas)." + (f" {a.nota}" if a.nota else ""))
+    r.italic, r.font.size = True, Pt(9)
+    if ref is not None and ref.font.name:
+        r.font.name = ref.font.name
+    d.save(a.salida)
+    print(f"ok {a.salida}: {sum(conteo.values())} turnos con código, {sin_id} siguen como «{a.participantes}»")
+    print(dict(sorted(conteo.items())))
 
 
 def main():
@@ -469,9 +570,14 @@ def main():
         x.add_argument("--limpia", required=True); x.add_argument("--puntos", required=(nombre == "aplicar"))
         x.add_argument("--llega", nargs="*", help="LETRA=HH:MM:SS (tiempo de la limpia) de quien llegó tarde")
         x.add_argument("--participantes", default="R", help="etiqueta de los participantes en la limpia")
+    x = sp.add_parser("transcripcion"); x.add_argument("alineacion"); x.add_argument("respuestas")
+    x.add_argument("--limpia", required=True); x.add_argument("--salida", required=True)
+    x.add_argument("--nota", default="", help="texto que se agrega a la nota bajo la tabla")
+    x.add_argument("--participantes", default="R", help="etiqueta de los participantes en la limpia")
     a = ap.parse_args()
     {"diarizar": cmd_diarizar, "alinear": cmd_alinear, "clips": cmd_clips,
-     "revisar": cmd_revisar, "aplicar": lambda a: cmd_revisar(a, True)}[a.cmd](a)
+     "revisar": cmd_revisar, "aplicar": lambda a: cmd_revisar(a, True),
+     "transcripcion": cmd_transcripcion}[a.cmd](a)
 
 
 if __name__ == "__main__":

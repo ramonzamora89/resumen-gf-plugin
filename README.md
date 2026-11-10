@@ -66,7 +66,8 @@ mano.
 - `skills/resumen-gf/SKILL.md`: reglas de redacción, de selección de citas y de atribución.
 - `skills/resumen-gf/scripts/generar_resumen.py`: verificación de citas y maquetación.
 - `skills/resumen-gf/scripts/voces.py`: identificación de voces de oído cuando la transcripción
-  rotula a todos igual (clips, página para elegir perfiles y revisión de las respuestas).
+  rotula a todos igual (clips, página para elegir perfiles, revisión de las respuestas y copia de
+  la transcripción con el código de cada participante).
   Necesita `ffmpeg`.
 - `skills/resumen-gf/references/formato_puntos.md`: formato de `puntos.json` y de las
   transcripciones que acepta.

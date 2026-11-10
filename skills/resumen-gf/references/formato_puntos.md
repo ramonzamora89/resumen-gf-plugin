@@ -62,6 +62,12 @@ voz:SPEAKER_02 = MEZCLA · nota: al final suena otra persona
 cita:00:43:54 = C
 ```
 
+A mano se agregan líneas para turnos sueltos, como las presentaciones, con el motivo después de `#`:
+
+```
+turno:00:42:47 = C  # cocinera, 29 años
+```
+
 `C` es la fila de la tabla de perfiles de la transcripción limpia (o su código, si la tabla trae
 columna «Código»). Otros valores: `MEZCLA`, `EQUIPO`, `NOSE`. `aplicar` escribe en cada cita
 `"voz": "perfil C"` y en `perfiles` el texto de esa fila.

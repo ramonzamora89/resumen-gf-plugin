@@ -166,7 +166,7 @@
   <p class="sub">De la transcripción de un grupo focal a un resumen de 10 puntos en Word, con 2 a 4
   citas textuales por punto, cada una verificada contra la transcripción, con el perfil de quien
   habla y la marca de tiempo. Todo en Corbel y en negro.</p>
-  <div class="footer-note">github.com/ramonzamora89/resumen-gf-plugin · v0.5.0 · noviembre de 2026</div>
+  <div class="footer-note">github.com/ramonzamora89/resumen-gf-plugin · v0.6.0 · noviembre de 2026</div>
 </div>
 
 <h1>Contenido</h1>
@@ -277,7 +277,7 @@ compartida), el marketplace también se registra desde el disco:</p>
   <tr><th>Qué</th><th>Dónde</th></tr>
   <tr><td>Registro de marketplaces conocidos</td><td><code>~/.claude/plugins/known_marketplaces.json</code></td></tr>
   <tr><td>Clon del marketplace</td><td><code>~/.claude/plugins/marketplaces/resumen-gf/</code></td></tr>
-  <tr><td>Copia instalada del plugin</td><td><code>~/.claude/plugins/cache/resumen-gf/resumen-gf/0.5.0/</code></td></tr>
+  <tr><td>Copia instalada del plugin</td><td><code>~/.claude/plugins/cache/resumen-gf/resumen-gf/0.6.0/</code></td></tr>
 </table>
 <p>En Windows, <code>~</code> es tu carpeta de usuario: <code>C:\Users\&lt;tu usuario&gt;</code>.</p>
 
@@ -475,7 +475,9 @@ el resultado.</p>
 que prepare la identificación de voces. Arma una carpeta con clips de cada voz, de la ronda de
 presentaciones y de las citas que no se pudieron ligar, y una página <code>index.html</code> para
 elegir el perfil de cada voz. Al terminar, pulsa «Copiar respuestas» y pégalas en el chat: Claude
-revisa que no haya perfiles repetidos ni contradicciones antes de ponerlos en el resumen.</p>
+revisa que no haya perfiles repetidos ni contradicciones antes de ponerlos en el resumen.
+También puede generar una copia de la transcripción limpia con el código de cada participante en
+sus turnos y la tabla de perfiles con las columnas «Código» y «Turnos».</p>
 <div class="callout warning">
   <span class="label">Los clips tienen voces y nombres reales</span>
   La carpeta de clips no se publica ni se comparte fuera del equipo.
@@ -568,7 +570,7 @@ cada archivo. Se resuelve una vez con
 # Uso normal: pedir el resumen de 10 puntos de una sesión, en el chat.
 
 # Uso directo del script
-SK=~/.claude/plugins/cache/resumen-gf/resumen-gf/0.5.0/skills/resumen-gf
+SK=~/.claude/plugins/cache/resumen-gf/resumen-gf/0.6.0/skills/resumen-gf
 
 python -I "$SK/scripts/generar_resumen.py" "$SK/ejemplo/puntos.json"        # prueba
 python -I "$SK/scripts/generar_resumen.py" puntos.json --solo-verificar
@@ -593,7 +595,7 @@ python -I "$SK/scripts/generar_resumen.py" puntos.json</code></pre>
   <tr><th>Archivo</th><th>Qué hace</th></tr>
   <tr><td><code>skills/resumen-gf/SKILL.md</code></td><td>Reglas de redacción, de selección de citas y de atribución</td></tr>
   <tr><td><code>skills/resumen-gf/scripts/generar_resumen.py</code></td><td>Verifica las citas y arma el Word</td></tr>
-  <tr><td><code>skills/resumen-gf/scripts/voces.py</code></td><td>Identificación de voces de oído: separar, alinear, clips, revisar y aplicar</td></tr>
+  <tr><td><code>skills/resumen-gf/scripts/voces.py</code></td><td>Identificación de voces de oído: separar, alinear, clips, revisar, aplicar y transcripción con participantes</td></tr>
   <tr><td><code>skills/resumen-gf/references/formato_puntos.md</code></td><td>Formato de <code>puntos.json</code> y de las transcripciones</td></tr>
   <tr><td><code>skills/resumen-gf/ejemplo/</code></td><td>Transcripción y resumen ficticios para probar</td></tr>
 </table>

@@ -146,6 +146,25 @@ Necesita `ffmpeg` en el PATH y la grabación de la sesión.
    «Participante» (la voz sigue sirviendo para el aviso de una sola voz); «Mezcla» las deja sin
    voz. Revisa la redacción de los perfiles, que salen de la tabla tal cual, y explica el método
    en la nota sobre la base.
+6. **Transcripción con participantes:** `voces.py transcripcion ALINEACION.json RESPUESTAS.txt
+   --limpia LIMPIA.docx --salida "LIMPIA con participantes.docx"`. Copia la limpia (el original no
+   se toca), cambia la etiqueta de cada turno identificado por el código del participante (P1, P2…
+   en el orden de la tabla, o el código que ya traiga) y agrega a la tabla las columnas «Código» y
+   «Turnos», con una nota que explica el método. Los turnos sin identificar siguen con su etiqueta.
+
+**Presentaciones y turnos sueltos.** En una presentación la persona dice quién es: es mejor
+evidencia que la separación de voces. Agrégalas a mano al archivo de respuestas, una línea por
+turno, con el motivo: `turno:00:42:47 = C  # cocinera, 29 años`. Asigna solo las que coinciden con
+una sola fila de la tabla (por oficio y edad, o porque la otra persona con ese oficio ya se
+presentó). Si lo que alguien dice no coincide con la tabla (otra ocupación, otra edad), no lo
+resuelvas por tu cuenta: explica la discrepancia y la lectura más probable, y espera la
+confirmación del equipo. Las líneas `turno:` y `cita:` mandan sobre la separación de voces.
+
+**Turnos cortos.** Un turno de menos de 4 palabras («Mis hijos», «Zona 18») nunca recibe voz
+automáticamente: la coincidencia por texto puede caer en otra frase igual dicha cerca.
+
+**Errores de contenido de la limpia** (una edad mal transcrita, por ejemplo) se corrigen en la
+limpia, idealmente por quien la hizo; no se corrigen en silencio en las copias.
 
 ## Nota sobre la base
 
