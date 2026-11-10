@@ -12,7 +12,10 @@ puntos.json (ver ../references/formato_puntos.md y ../ejemplo/puntos.json):
   estado ("preliminar" si la fuente es merged.json; se fuerza solo), equipo (etiquetas que no se
   citan nunca: Moderador y miembros del equipo), perfiles {etiqueta: "Mujer, 31 años, ..."},
   citas_min / citas_max (opcionales, 2 y 4 por defecto),
-  puntos [{titulo, cuerpo, citas: [{texto, hablante, ts}, ...]}], nota_base.
+  puntos [{titulo, cuerpo, citas: [{texto, hablante, ts, voz?}, ...]}], nota_base.
+  voz (opcional): quién habla, cuando la transcripción no lo distingue (por ejemplo, todos los
+  participantes rotulados «R»). Se usa para el perfil y para el aviso de citas de una sola voz;
+  la verificación sigue usando hablante y ts.
 
 Verificación, antes de escribir nada:
   1. Cada punto trae entre citas_min y citas_max citas.
@@ -56,7 +59,9 @@ def norm(s):
     return " ".join(s.split())
 
 
+# «Hablante [HH:MM:SS]: texto» o «Hablante: [HH:MM:SS] texto»
 TURNO_DOCX = re.compile(r"^\s*(.+?)\s*\[(\d\d:\d\d:\d\d)\]\s*:\s*(.*)$", re.S)
+TURNO_DOCX2 = re.compile(r"^\s*([^:\[\]]{1,40}?)\s*:\s*\[(\d\d:\d\d:\d\d)\]\s*(.*)$", re.S)
 
 
 def turnos_docx(fuente):
@@ -67,7 +72,7 @@ def turnos_docx(fuente):
         txt = p.text.strip()
         if not txt:
             continue
-        m = TURNO_DOCX.match(txt)
+        m = TURNO_DOCX2.match(txt) or TURNO_DOCX.match(txt)
         if m:
             tt.append({"label": m.group(1), "ts": m.group(2), "text": m.group(3)})
         elif tt:
@@ -155,7 +160,8 @@ def verificar(cfg, tt, crudo):
             if faltan:
                 errores.append(f"{donde}: falta {', '.join(faltan)}")
                 continue
-            hablantes.add(c["hablante"])
+            voz = c.get("voz") or c["hablante"]
+            hablantes.add(voz)
             if c["hablante"] in equipo:
                 errores.append(f"{donde}: «{c['hablante']}» es del equipo y no se cita")
                 continue
@@ -175,8 +181,8 @@ def verificar(cfg, tt, crudo):
                 if dud:
                     avisos.append(f"{donde} ({c['ts']}): palabras con baja confianza, escuchar "
                                   f"antes de citar fuera del equipo: {', '.join(dud)}")
-            if c["hablante"] not in perfiles:
-                avisos.append(f"{donde}: «{c['hablante']}» sin perfil; se rotula como participante")
+            if voz not in perfiles:
+                avisos.append(f"{donde}: «{voz}» sin perfil; se rotula como participante")
         if len(citas) > 1 and len(hablantes) == 1:
             avisos.append(f"punto {n}: todas las citas son de «{next(iter(hablantes))}»; "
                           "si otras personas dijeron lo mismo, conviene sumar otra voz")
@@ -278,8 +284,8 @@ def escribir(cfg, crudo):
         for cita in citas_de(p):
             q = doc.add_paragraph(f"“{cita['texto']}”", style="Quote")
             q.paragraph_format.keep_with_next = True  # la cita no se separa de su atribución
-            quien = perfiles.get(cita["hablante"]) or \
-                f"Participante ({cita['hablante']} en la transcripción)"
+            voz = cita.get("voz") or cita["hablante"]
+            quien = perfiles.get(voz) or f"Participante ({voz} en la transcripción)"
             doc.add_paragraph(f"{quien}, {cita['ts']}", style="Atribución")
 
     doc.add_paragraph("Nota sobre la base", style="Heading 2")

@@ -30,8 +30,9 @@ ficticio que corre en cualquier máquina, en `ejemplo/`.
   `cfg.json` si existe: trae los pendientes, quién es del equipo y los perfiles.
 - **Elige la fuente**, en este orden:
   1. `turns_ts.json`: transcripción limpia.
-  2. La transcripción `.docx` con párrafos `Hablante [HH:MM:SS]: texto`. Si su encabezado dice
-     «para revisión» o la limpieza no está hecha, pon `"estado": "preliminar"`.
+  2. La transcripción `.docx` con párrafos `Hablante [HH:MM:SS]: texto` o
+     `Hablante: [HH:MM:SS] texto`. Si su encabezado dice «para revisión» o la limpieza no está
+     hecha, pon `"estado": "preliminar"`.
   3. `merged.json`: cruda, sin limpiar. El resumen sale **preliminar** automáticamente, con un
      aviso debajo del título.
 - **Equipo.** El rol del equipo cambia de una sesión a otra: quien modera en una puede tomar
@@ -81,8 +82,16 @@ en voces distintas.
 - Cada cita es literal de la transcripción. Se corrige solo la puntuación. `(…)` marca un corte
   y cada fragmento tiene que aparecer en orden.
 - `hablante` es la etiqueta tal como aparece en la transcripción («Participante 3»,
-  «Hablante 4», o un nombre de pila si se dijo en la grabación). `ts` es la marca de tiempo **de ese turno**. Si el script dice que no hay turno,
-  te muestra los que hay cerca.
+  «Hablante 4», o un nombre de pila si se dijo en la grabación). `ts` es la marca de tiempo
+  **de ese turno**. Si el script dice que no hay turno, te muestra los que hay cerca.
+- **Transcripciones que no distinguen a los participantes.** Si todos aparecen con la misma
+  etiqueta (por ejemplo, «R»), `hablante` sigue siendo esa etiqueta y cada cita lleva además
+  `voz`: quién habla. El perfil y el aviso de una sola voz usan `voz`. Solo se pone `voz` cuando
+  sale de una fuente que se puede revisar, por ejemplo la separación de voces de una
+  transcripción anterior de la misma sesión, alineada turno por turno; se citan solo los turnos
+  donde las dos versiones coinciden, y la nota sobre la base explica cómo se asignó. Si no hay
+  esa fuente, no se pone `voz`: la cita sale como «Participante» y el cuerpo no puede decir que
+  hablaron personas distintas.
 - La verificación revisa los 3 minutos que siguen al turno, porque la diarización (la
   separación automática de voces) a veces parte una frase entre dos turnos.
 - **Citas cortas en el cuerpo** van así: “frase literal” (mujer, 21 años, …, 01:10:59). El script
@@ -98,6 +107,45 @@ en voces distintas.
   `cfg.json` de la sesión y no sale del equipo. **Nunca se imprimen nombres** en el resumen.
 - Una etiqueta sin perfil sale como «Participante (Hablante N en la transcripción)». No adivines
   perfiles a partir de la ronda de presentaciones; deja la hipótesis en la nota sobre la base.
+
+## Identificar de oído quién habla (`scripts/voces.py`)
+
+Cuando la transcripción limpia rotula a todos los participantes igual («R») y no hay una
+transcripción anterior con voces revisadas, una persona del equipo identifica las voces de oído.
+Tú preparas el material y revisas sus respuestas; nunca asignas un perfil por tu cuenta.
+Necesita `ffmpeg` en el PATH y la grabación de la sesión.
+
+1. **Separar las voces.** Si la separación que ya existe tiene menos voces que personas en la
+   sala (participantes más equipo), repítela con el número correcto, con el Python del ambiente
+   de WhisperX: `voces.py diarizar AUDIO WHISPERX.json DIAR.json --hablantes N`. Usa el JSON de
+   WhisperX de esa misma grabación (palabras con tiempo).
+2. **Alinear:** `voces.py alinear LIMPIA.docx DIAR.json ALINEACION.json`. Calcula solo el
+   desfase entre la limpia y la grabación (pueden ser minutos si la limpia incluye tramos que la
+   grabación no tiene). Un turno tiene voz si coincide en ≥ 60 % de sus palabras y ≥ 90 % de esas
+   palabras las dice una sola voz.
+3. **Clips y página:** `voces.py clips ALINEACION.json AUDIO CARPETA --limpia LIMPIA.docx
+   --puntos puntos.json --presentaciones PRES.json --titulo "GF3 · identificación de voces"`.
+   - **Presentaciones:** los turnos de una ronda de presentaciones duran 2 o 3 segundos y los
+     tiempos de la limpia suelen quedar corridos ahí. Ubica cada presentación en las palabras
+     reconocidas de la grabación (lo que dice cada una: oficio, edad), comprueba que el tramo
+     contenga a la persona correcta y pasa los cortes en `PRES.json`
+     (`[{"inicio": s, "fin": s, "texto": "Cocinera; 29 años"}]`). Sin ese archivo, el script
+     intenta cortarlas solo y marca cada clip como «comprobar».
+   - La carpeta lleva voces y nombres reales: **no se publica ni sale del equipo**. Se abre
+     `index.html` con doble clic; las respuestas se copian con el botón del final.
+4. **Revisar las respuestas:** guarda lo que te peguen en un `.txt` y corre
+   `voces.py revisar ALINEACION.json RESPUESTAS.txt --limpia LIMPIA.docx --llega LETRA=HH:MM:SS`
+   (`--llega` para quien llegó tarde, con el tiempo de la limpia). El script detecta perfiles
+   repetidos en dos voces y voces que hablan antes de que llegue esa persona, y lista todo lo
+   que dice cada persona. **Lee esa lista** y busca contradicciones: con quién vive («vivo sola»
+   frente a «mi hija»), hijos, dónde vive, a qué se dedica, si estudia o trabaja. Contrasta
+   también con la ronda de presentaciones. Devuelve a la persona las dudas concretas, con la
+   evidencia; su oído decide.
+5. **Aplicar:** `voces.py aplicar …` con los mismos argumentos más `--puntos puntos.json`. Solo
+   escribe si no hay errores. Las voces sin respuesta o «No estoy segura» quedan como
+   «Participante» (la voz sigue sirviendo para el aviso de una sola voz); «Mezcla» las deja sin
+   voz. Revisa la redacción de los perfiles, que salen de la tabla tal cual, y explica el método
+   en la nota sobre la base.
 
 ## Nota sobre la base
 
