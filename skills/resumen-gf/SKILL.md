@@ -28,6 +28,9 @@ ficticio que corre en cualquier máquina, en `ejemplo/`.
 
 - Ubica la carpeta de la sesión (por ejemplo, `transcripciones/<sesión>/`) y su
   `cfg.json` si existe: trae los pendientes, quién es del equipo y los perfiles.
+- Si la sesión se grabó con dos aparatos y todavía no está limpia, la limpieza va primero, con el skill
+  **limpieza-gf** de este plugin. Su salida `<nombre>_Limpia con participantes.docx` (turnos
+  `P1: [HH:MM:SS] texto`, moderador como `MODERADOR`) es la mejor fuente para el resumen.
 - **Elige la fuente**, en este orden:
   1. `turns_ts.json`: transcripción limpia.
   2. La transcripción `.docx` con párrafos `Hablante [HH:MM:SS]: texto` o
@@ -112,6 +115,8 @@ en voces distintas.
 
 Cuando la transcripción limpia rotula a todos los participantes igual («R») y no hay una
 transcripción anterior con voces revisadas, una persona del equipo identifica las voces de oído.
+Si la sesión está en limpieza (skill limpieza-gf), `paginas.py para-voces` arma la entrada y
+`paginas.py pistas` las pistas cuando no hubo ronda de presentaciones grabada.
 Tú preparas el material y revisas sus respuestas; nunca asignas un perfil por tu cuenta.
 Necesita `ffmpeg` en el PATH y la grabación de la sesión.
 

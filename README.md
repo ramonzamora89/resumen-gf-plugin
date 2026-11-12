@@ -5,6 +5,11 @@ un grupo focal**. Cada punto lleva un título formal, un párrafo en lenguaje ll
 citas textuales**, con el perfil de quien habla y la marca de tiempo. Sale en `.docx` con
 Corbel y con todo el texto en negro.
 
+Incluye también la **limpieza de la transcripción** cuando la sesión se grabó con dos aparatos
+(skill `limpieza-gf`): identificación de voces de oído, contraste de los dos audios, cortes entre
+hablantes y palabras dudosas, cada etapa con una página local para que el equipo escuche y decida.
+Sale en el formato de las limpias del equipo (`MODERADOR` / `R`, Arial), lista para el resumen.
+
 Claude lee la transcripción y redacta los puntos. Un script comprueba que **cada cita esté,
 literal, en la transcripción, en el turno y la marca de tiempo indicados**, y que nadie del
 equipo aparezca citado. Si una sola cita falla, no se escribe el documento.
@@ -61,6 +66,14 @@ Claude escribe `puntos.json` junto a la transcripción, corre la verificación y
 `.docx`. Para corregir algo se edita `puntos.json` y se vuelve a correr; el `.docx` no se toca a
 mano.
 
+Para una sesión grabada con dos aparatos que todavía no está limpia:
+
+> Empecemos con la limpieza del GF3: las transcripciones de los dos aparatos están en
+> `transcripciones/gf3` y los perfiles en la hoja de participantes.
+
+Claude arma cada página de oído (voces, contraste, cortes, dudosos), espera las respuestas del equipo,
+las registra en `limpieza.json` y al final genera `GF3_Limpia.docx` y `GF3_Limpia con participantes.docx`.
+
 ## Qué incluye
 
 - `skills/resumen-gf/SKILL.md`: reglas de redacción, de selección de citas y de atribución.
@@ -73,6 +86,12 @@ mano.
   transcripciones que acepta.
 - `skills/resumen-gf/ejemplo/`: una transcripción y un resumen **ficticios** para probar la
   instalación.
+- `skills/limpieza-gf/SKILL.md`: el proceso de limpieza con dos aparatos y sus reglas.
+- `skills/limpieza-gf/scripts/`: `contraste.py` (desfase y tramos distintos entre aparatos, borrador),
+  `paginas.py` (entrada para `voces.py`, pistas, páginas de contraste, cortes y dudosos, análisis de
+  cortes), `limpiar.py` (aplica todas las decisiones de `limpieza.json`, palabra por palabra) y
+  `formato_limpia.py` (la limpia en el formato del equipo). Necesitan `ffmpeg`.
+- `skills/limpieza-gf/references/limpieza_json.md`: formato de `limpieza.json`, con un ejemplo ficticio.
 
 No incluye transcripciones, perfiles ni datos de ninguna sesión real. Esos se quedan en la
 carpeta del proyecto, y el `.gitignore` excluye los `.docx` generados.

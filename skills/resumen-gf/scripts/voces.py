@@ -145,13 +145,14 @@ def cmd_alinear(a):
     idx = collections.defaultdict(list)
     for k in range(len(pal) - 4):
         idx[tuple(pal[k:k + 5])].append(k)
+    # solo la frase con que empieza cada turno: la marca del turno es la de su primera palabra (una frase del
+    # medio de un turno largo cae minutos después y corría el desfase)
     difs = []
     for t in T:
         tw = norm(t["text"])
-        for k in range(0, max(0, len(tw) - 4), 3):
-            hit = idx.get(tuple(tw[k:k + 5]))
-            if hit and len(hit) == 1:
-                difs.append(seg(t["ts"]) - W[hit[0]][0])
+        hit = idx.get(tuple(tw[:5])) if len(tw) >= 5 else None
+        if hit and len(hit) == 1:
+            difs.append(seg(t["ts"]) - W[hit[0]][0])
     if not difs:
         sys.exit("No encontré frases comunes entre la limpia y la grabación.")
     off = statistics.median(difs)
@@ -162,7 +163,8 @@ def cmd_alinear(a):
         r = dict(t, cov=0.0, pure=0.0, voz=None, voces={}, rec=None)
         if len(tw) >= 2:
             t0 = seg(t["ts"]) - off
-            ks = [k for k, w in enumerate(W) if abs(w[0] - t0) <= 150]
+            # la ventana cubre el turno entero: 150 s antes y, después, 150 s más ~0.6 s por palabra
+            ks = [k for k, w in enumerate(W) if t0 - 150 <= w[0] <= t0 + 150 + 0.6 * len(tw)]
             if ks:
                 lo, hi = ks[0], ks[-1] + 1
                 sm = difflib.SequenceMatcher(None, tw, pal[lo:hi], autojunk=False)

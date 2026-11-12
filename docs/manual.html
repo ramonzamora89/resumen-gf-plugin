@@ -163,10 +163,10 @@
 <div class="cover">
   <div class="eyebrow">Manual de instalación y uso</div>
   <h1>Plugin <span class="nombre">resumen-gf</span><br>para Claude Code</h1>
-  <p class="sub">De la transcripción de un grupo focal a un resumen de 10 puntos en Word, con 2 a 4
-  citas textuales por punto, cada una verificada contra la transcripción, con el perfil de quien
-  habla y la marca de tiempo. Todo en Corbel y en negro.</p>
-  <div class="footer-note">github.com/ramonzamora89/resumen-gf-plugin · v0.6.0 · noviembre de 2026</div>
+  <p class="sub">De la grabación de un grupo focal a una transcripción limpia, decidida de oído por el
+  equipo, y de ahí a un resumen de 10 puntos en Word, con 2 a 4 citas textuales por punto, cada una
+  verificada contra la transcripción, con el perfil de quien habla y la marca de tiempo.</p>
+  <div class="footer-note">github.com/ramonzamora89/resumen-gf-plugin · v0.7.0 · noviembre de 2026</div>
 </div>
 
 <h1>Contenido</h1>
@@ -177,12 +177,13 @@
   <div class="toc-item"><span class="num">4</span><span class="txt">Instalación y uso en la app Claude Desktop (pestaña Code)</span></div>
   <div class="toc-item"><span class="num">5</span><span class="txt">Probar que funciona</span></div>
   <div class="toc-item"><span class="num">6</span><span class="txt">Preparar la sesión que se va a resumir</span></div>
-  <div class="toc-item"><span class="num">7</span><span class="txt">Flujo de trabajo completo, paso a paso</span></div>
-  <div class="toc-item"><span class="num">8</span><span class="txt">Cómo se eligen las 2 a 4 citas</span></div>
-  <div class="toc-item"><span class="num">9</span><span class="txt">Mensajes del verificador: errores y avisos</span></div>
-  <div class="toc-item"><span class="num">10</span><span class="txt">Qué NO hacer</span></div>
-  <div class="toc-item"><span class="num">11</span><span class="txt">Solución de problemas</span></div>
-  <div class="toc-item"><span class="num">12</span><span class="txt">Referencia rápida</span></div>
+  <div class="toc-item"><span class="num">7</span><span class="txt">Limpiar una sesión grabada con dos aparatos</span></div>
+  <div class="toc-item"><span class="num">8</span><span class="txt">Flujo de trabajo completo, paso a paso</span></div>
+  <div class="toc-item"><span class="num">9</span><span class="txt">Cómo se eligen las 2 a 4 citas</span></div>
+  <div class="toc-item"><span class="num">10</span><span class="txt">Mensajes del verificador: errores y avisos</span></div>
+  <div class="toc-item"><span class="num">11</span><span class="txt">Qué NO hacer</span></div>
+  <div class="toc-item"><span class="num">12</span><span class="txt">Solución de problemas</span></div>
+  <div class="toc-item"><span class="num">13</span><span class="txt">Referencia rápida</span></div>
 </div>
 
 <h2 id="que-es">1. Qué es este plugin (y qué no hace por ti)</h2>
@@ -362,6 +363,7 @@ documento.</p>
 <h3>Qué transcripción usar</h3>
 <table>
   <tr><th>Archivo</th><th>Qué es</th><th>Cómo sale el resumen</th></tr>
+  <tr><td><code>GF3_Limpia con participantes.docx</code></td><td>Salida de la limpieza (§7): turnos <code>P1: [HH:MM:SS] texto</code>, moderador como <code>MODERADOR</code></td><td>Definitivo</td></tr>
   <tr><td><code>turns_ts.json</code></td><td>Transcripción limpia, revisada</td><td>Definitivo</td></tr>
   <tr><td>Transcripción <code>.docx</code></td><td>El Word de la transcripción, con párrafos <code>Hablante [HH:MM:SS]: texto</code> o <code>Hablante: [HH:MM:SS] texto</code></td><td>Definitivo, o preliminar si la limpieza no está hecha</td></tr>
   <tr><td><code>merged.json</code></td><td>Transcripción automática, sin limpiar</td><td><strong>Preliminar</strong>, con aviso debajo del título</td></tr>
@@ -381,7 +383,60 @@ Esas voces nunca se citan.</p>
 Esa correspondencia sale del inventario de participantes y no se comparte fuera del equipo. Una
 etiqueta sin perfil sale como «Participante (Hablante N en la transcripción)».</p>
 
-<h2 id="flujo" class="nueva">7. Flujo de trabajo completo, paso a paso</h2>
+<h2 id="limpieza" class="nueva">7. Limpiar una sesión grabada con dos aparatos</h2>
+
+<p>El skill <strong>limpieza-gf</strong> deja lista la transcripción antes del resumen. Está pensado
+para sesiones grabadas con dos aparatos del mismo evento (un teléfono y una grabadora): el segundo
+audio no es respaldo, es cotejo, porque el reconocimiento automático omite o inventa frases en uno u
+otro. <strong>Las decisiones las toma el oído del equipo</strong>: Claude prepara páginas para
+escuchar, propone con evidencia, revisa contradicciones y registra cada decisión con su motivo.</p>
+
+<h3>Qué se necesita</h3>
+<ul>
+  <li>Las dos grabaciones transcritas con WhisperX (con el número de voces = personas en la sala) y el
+  <code>merged.json</code> del aparato <em>base</em>: el que tiene la sesión completa en una sola línea de
+  tiempo. El otro es el <em>cotejo</em>.</li>
+  <li>La hoja de perfiles (sexo, edad, ocupación), sin nombres, y quién del equipo estaba en la sala.</li>
+  <li><code>ffmpeg</code> en el PATH para cortar los clips.</li>
+</ul>
+
+<h3>Las etapas</h3>
+<table>
+  <tr><th>Etapa</th><th>Qué hace Claude</th><th>Qué hace el equipo</th></tr>
+  <tr><td>0. Contraste</td><td>Mide el desfase entre aparatos y lista dónde no coinciden; arma el borrador</td><td>—</td></tr>
+  <tr><td>1. Voces</td><td>Arma la página de voces; si no hubo ronda de presentaciones, busca pistas (lo que cada quien dice de sí, marcas de género, cómo le da la palabra el moderador) y revisa contradicciones con los perfiles</td><td>Escucha y asigna cada voz a un perfil</td></tr>
+  <tr><td>2. Contraste de aparatos</td><td>Página con los tramos de 8 palabras o más en que los aparatos no coinciden, con los dos audios</td><td>Elige base, cotejo, los dos, inaudible u «otro» con lo que se oye</td></tr>
+  <tr><td>3. Cortes entre hablantes</td><td>Corrige los cortes corridos con la gramática y la voz que da cada aparato; prepara una página con los dudosos</td><td>Decide los dudosos</td></tr>
+  <tr><td>4. Texto</td><td>Lee la sesión completa; corrige lo que el cotejo y el contexto confirman y marca el resto como <code>[dudoso: …]</code></td><td>Confirma o corrige cada dudoso</td></tr>
+  <tr><td>5. Entrega</td><td>Limpia en el formato del equipo: <code>GF3_Limpia.docx</code> (todos «R») y <code>GF3_Limpia con participantes.docx</code></td><td>Decide cómo tratar nombres y testimonios sensibles</td></tr>
+</table>
+
+<h3>Cómo se trabaja con las páginas</h3>
+<p>Cada página se abre con doble clic (<code>clips_contraste/index.html</code>,
+<code>clips_cortes/index.html</code>, <code>clips_dudosos/index.html</code>). Se escucha, se elige una
+opción y, al final, el botón «Copiar respuestas» deja el texto listo para pegarlo en el chat:</p>
+<pre><code>GF3 · contraste de aparatos
+contraste:00:09:50 = T
+contraste:00:57:01 = O  # lo que se oye de verdad</code></pre>
+
+<div class="callout field">
+  <span class="label">Las páginas llevan voces reales</span>
+  Las carpetas <code>clips_*</code> y los archivos de respuestas son material de trabajo: no se
+  publican ni salen del equipo. Los nombres de participantes que se dicen en voz alta se reemplazan
+  por <code>[PARTICIPANTE]</code> en la limpia; los de funcionarios públicos se mantienen.
+</div>
+
+<h3>Dónde queda todo</h3>
+<pre><code>transcripciones/gf3/
+  limpieza.json                         &lt;- todas las decisiones de la sesión
+  respuestas_*.txt                      &lt;- lo que pegó el equipo, tal cual
+  limpia/cambios.tsv                    &lt;- una fila por decisión, con su motivo
+  GF3_Limpia.docx
+  GF3_Limpia con participantes.docx     &lt;- la fuente del resumen</code></pre>
+<p>El motor vuelve a aplicar <code>limpieza.json</code> desde cero cada vez, así que la limpia nunca se
+edita a mano: si algo cambia, se cambia la decisión y se vuelve a generar.</p>
+
+<h2 id="flujo" class="nueva">8. Flujo de trabajo completo, paso a paso</h2>
 
 <p>En el uso normal no corres nada a mano: pides el resumen y revisas el resultado. Lo que sigue es
 lo que pasa por dentro, para poder intervenir cuando algo no sale bien.</p>
@@ -420,7 +475,7 @@ con la etiqueta de quien habla y la marca de tiempo de su turno.</p>
 solo en modo verificación:</p>
 <pre><code>python -I generar_resumen.py puntos.json --solo-verificar</code></pre>
 <p>Si algo falla, el script lo dice y no escribe el documento. Claude corrige y vuelve a correrlo
-hasta que todo pase (ver §9).</p>
+hasta que todo pase (ver §10).</p>
 
 <h3>Paso 4 · Generar el Word</h3>
 <pre><code>python -I generar_resumen.py puntos.json</code></pre>
@@ -442,7 +497,7 @@ una de alguien que no esté de acuerdo») o edita <code>puntos.json</code>, y se
   nombres de terceros que aparezcan dentro de las citas. El plugin no lo decide.
 </div>
 
-<h2 id="citas">8. Cómo se eligen las 2 a 4 citas</h2>
+<h2 id="citas">9. Cómo se eligen las 2 a 4 citas</h2>
 
 <p>Las citas están para que quien lee vea el punto dicho con las palabras de quienes participaron,
 y en voces distintas. Estas son las reglas que sigue el skill, y las que conviene revisar al leer
@@ -483,7 +538,7 @@ sus turnos y la tabla de perfiles con las columnas «Código» y «Turnos».</p>
   La carpeta de clips no se publica ni se comparte fuera del equipo.
 </div>
 
-<h2 id="mensajes" class="nueva">9. Mensajes del verificador: errores y avisos</h2>
+<h2 id="mensajes" class="nueva">10. Mensajes del verificador: errores y avisos</h2>
 
 <p>Los <strong>errores</strong> frenan el documento: no se escribe nada hasta corregirlos. Los
 <strong>avisos</strong> no lo frenan, pero hay que leerlos.</p>
@@ -501,7 +556,7 @@ sus turnos y la tabla de perfiles con las columnas «Código» y «Turnos».</p>
   <tr><td><code>AVISO: hay 7 puntos, no 10</code></td><td>El resumen no tiene diez puntos</td><td>Completar o justificar</td></tr>
 </table>
 
-<h2 id="no-hacer">10. Qué NO hacer</h2>
+<h2 id="no-hacer">11. Qué NO hacer</h2>
 <ul>
   <li><strong>No editar el Word a mano.</strong> Se corrige <code>puntos.json</code> y se vuelve a
     generar. Si no, el siguiente cambio borra el anterior.</li>
@@ -517,7 +572,7 @@ sus turnos y la tabla de perfiles con las columnas «Código» y «Turnos».</p>
     la herramienta; los datos se quedan en la carpeta del proyecto.</li>
 </ul>
 
-<h2 id="problemas">11. Solución de problemas</h2>
+<h2 id="problemas">12. Solución de problemas</h2>
 
 <h3><code>/plugin marketplace add</code> falla o no encuentra el repositorio</h3>
 <p>Revisa que el nombre esté bien escrito: <code>ramonzamora89/resumen-gf-plugin</code>. Si la
@@ -559,7 +614,7 @@ cita solo el fragmento que sí está en el turno de quien habla, o marca el cort
 cada archivo. Se resuelve una vez con
 <code>git config --global --add safe.directory E:/resumen-gf-plugin</code>.</p>
 
-<h2 id="referencia">12. Referencia rápida</h2>
+<h2 id="referencia">13. Referencia rápida</h2>
 
 <h3>Comandos</h3>
 <pre><code># Instalación
@@ -570,11 +625,18 @@ cada archivo. Se resuelve una vez con
 # Uso normal: pedir el resumen de 10 puntos de una sesión, en el chat.
 
 # Uso directo del script
-SK=~/.claude/plugins/cache/resumen-gf/resumen-gf/0.6.0/skills/resumen-gf
+SK=~/.claude/plugins/cache/resumen-gf/resumen-gf/0.7.0/skills/resumen-gf
+LG=~/.claude/plugins/cache/resumen-gf/resumen-gf/0.7.0/skills/limpieza-gf
 
 python -I "$SK/scripts/generar_resumen.py" "$SK/ejemplo/puntos.json"        # prueba
 python -I "$SK/scripts/generar_resumen.py" puntos.json --solo-verificar
-python -I "$SK/scripts/generar_resumen.py" puntos.json</code></pre>
+python -I "$SK/scripts/generar_resumen.py" puntos.json
+
+# Limpieza (sesión con dos aparatos)
+python -I "$LG/scripts/contraste.py" contrastar base.json cotejo.json contraste.tsv
+python -I "$LG/scripts/paginas.py" contraste CARPETA      # también: para-voces, pistas,
+python -I "$LG/scripts/limpiar.py" CARPETA                 #   cortes-analisis, cortes, dudosos
+python -I "$LG/scripts/formato_limpia.py" CARPETA</code></pre>
 
 <h3>Campos de <code>puntos.json</code></h3>
 <table>
@@ -598,6 +660,9 @@ python -I "$SK/scripts/generar_resumen.py" puntos.json</code></pre>
   <tr><td><code>skills/resumen-gf/scripts/voces.py</code></td><td>Identificación de voces de oído: separar, alinear, clips, revisar, aplicar y transcripción con participantes</td></tr>
   <tr><td><code>skills/resumen-gf/references/formato_puntos.md</code></td><td>Formato de <code>puntos.json</code> y de las transcripciones</td></tr>
   <tr><td><code>skills/resumen-gf/ejemplo/</code></td><td>Transcripción y resumen ficticios para probar</td></tr>
+  <tr><td><code>skills/limpieza-gf/SKILL.md</code></td><td>Proceso de limpieza con dos aparatos y sus reglas</td></tr>
+  <tr><td><code>skills/limpieza-gf/scripts/</code></td><td><code>contraste.py</code>, <code>paginas.py</code>, <code>limpiar.py</code> y <code>formato_limpia.py</code></td></tr>
+  <tr><td><code>skills/limpieza-gf/references/limpieza_json.md</code></td><td>Formato de <code>limpieza.json</code> con un ejemplo ficticio</td></tr>
 </table>
 
 <p style="margin-top:16pt; color:#64748b; font-size:9pt">
