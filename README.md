@@ -88,7 +88,7 @@ las registra en `limpieza.json` y al final genera `GF3_Limpia.docx` y `GF3_Limpi
   instalación.
 - `skills/limpieza-gf/SKILL.md`: el proceso de limpieza con dos aparatos y sus reglas.
 - `skills/limpieza-gf/scripts/`: `contraste.py` (desfase y tramos distintos entre aparatos, borrador),
-  `paginas.py` (entrada para `voces.py`, pistas, páginas de contraste, cortes y dudosos, análisis de
+  `paginas.py` (entrada para `voces.py`, pistas, páginas de nombres, contraste, cortes y dudosos, análisis de
   cortes), `limpiar.py` (aplica todas las decisiones de `limpieza.json`, palabra por palabra) y
   `formato_limpia.py` (la limpia en el formato del equipo). Necesitan `ffmpeg`.
 - `skills/limpieza-gf/references/limpieza_json.md`: formato de `limpieza.json`, con un ejemplo ficticio.

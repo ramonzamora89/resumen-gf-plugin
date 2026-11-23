@@ -11,9 +11,13 @@ Lee CARPETA/limpieza.json (formato en references/limpieza_json.md) y aplica, en 
   3. Cortes entre hablantes decididos leyendo («cortes»), frases que el aparato base desordenó («reubicar»),
      cortes decididos de oído («oido_cortes»), intervenciones que ningún aparato transcribió («insertar»).
   4. Reglas: «Gracias, compañera/o» es del moderador; un fragmento de menos de 4 palabras entre dos tramos de la
-     misma persona es de esa persona (salvo que el cotejo le dé otra voz); turnos seguidos de la misma persona
-     se juntan.
-  5. Texto («texto»): palabras mal transcritas, [dudoso: …], nombres; mayúsculas a mitad de frase.
+     misma persona es de esa persona (salvo que el cotejo le dé otra voz, o que sea una fórmula del moderador
+     como «Por favor.» o «Adelante.»); turnos seguidos de la misma persona se juntan.
+  5. Texto («texto»): palabras mal transcritas, [dudoso: …]; nombres dichos en voz alta («nombres»);
+     respuestas de la página de dudosos («dudosos»); mayúsculas a mitad de frase.
+
+Al final avisa de las frases típicas de alucinación de Whisper que siguen en el texto («Gracias por ver el
+video», «Gracias a todos por su atención»…), con su marca de tiempo, para revisarlas de oído.
 
 Cada turno del borrador (merged.json) es un tramo seguido de palabras del JSON de WhisperX del aparato base;
 el script lo comprueba antes de empezar. Así cada cambio se aplica sobre palabras y los turnos se rearman sin
@@ -27,6 +31,11 @@ from pathlib import Path
 
 LARGO_DEF = 8       # tramos de contraste que se deciden de oído
 MIN_PALABRAS = 4    # un turno más corto no recibe voz automáticamente (igual que voces.py)
+# fórmulas del moderador que la regla de fragmentos no pega al turno vecino («Yo. | Por favor. | De hecho…»)
+FORMULAS_MOD = {"por favor", "adelante", "gracias", "ok gracias", "muchas gracias", "contanos", "cuentanos",
+                "cuentenos", "bienvenido", "bienvenida"}
+ALUCINACIONES = ("gracias por ver el video", "gracias por ver", "gracias a todos por su atencion",
+                 "gracias por su atencion", "gracias a todos por su participacion", "suscribete", "subtitulos realizados")
 
 
 def leer_palabras(ruta):
@@ -48,6 +57,81 @@ def seg_aprox(ts):
     if len(p[2]) == 1:  # «00:39:2» = en los segundos 20 a 29
         return int(p[0]) * 3600 + int(p[1]) * 60 + int(p[2] + "0")
     return int(p[0]) * 3600 + int(p[1]) * 60 + int(p[2])
+
+
+def nombres_dichos(seq, N, cambios):
+    """«nombres»: nombres dichos en voz alta → marca. Acepta nombres de varias palabras y variantes mal
+    transcritas; respeta la puntuación pegada («¿Fulana?» → «¿[PARTICIPANTE]?»), compara sin tildes ni mayúsculas
+    pero solo reemplaza palabras que empiezan con mayúscula, y deja intactas las frases de «proteger»
+    («Miguel Ángel Asturias», «San Juan Sacatepéquez»). Los nombres largos se buscan antes que los cortos."""
+    if not N:
+        return
+    marca = N.get("marca", "[PARTICIPANTE]")
+    otros = N.get("otros", {})
+    tabla = [(n, marca) for n in N.get("participantes", [])] + list(otros.items())
+    tabla = sorted(((tuple(clave(w) for w in n.split()), m, n) for n, m in tabla),
+                   key=lambda x: (-len(x[0]), -sum(map(len, x[0]))))
+    prot = sorted({tuple(clave(w) for w in p.split()) for p in N.get("proteger", [])}, key=len, reverse=True)
+    cuenta = collections.Counter()
+    i = 0
+    while i < len(seq):
+        ks = tuple(clave(x["w"]) for x in seq[i:i + 6])
+        p = next((p for p in prot if ks[:len(p)] == p), None)
+        if p:
+            i += len(p)
+            continue
+        for q, m, n in tabla:
+            if ks[:len(q)] == q and re.match(r"\W*[A-ZÁÉÍÓÚÑ]", seq[i]["w"]):
+                pre = re.match(r"^\W*", seq[i]["w"]).group(0)
+                suf = re.search(r"\W*$", seq[i + len(q) - 1]["w"]).group(0)
+                seq[i:i + len(q)] = [dict(seq[i], w=pre + m + suf)]
+                cuenta[(n, m)] += 1
+                break
+        i += 1
+    for (n, m), c in sorted(cuenta.items()):
+        cambios.append(("—", "texto", f"nombre dicho en voz alta ({c} veces)", n, m, "paso 4"))
+
+
+def respuestas_dudosos(D, seq, Q, cambios):
+    """«dudosos»: aplica las respuestas de la página de dudosos («dudoso:HH:MM:SS = H|O|X  # texto»).
+    H deja la hipótesis sin marca, O pone lo escrito, X pone [inaudible]; «?» deja la marca."""
+    if not Q:
+        return
+    R = []
+    for l in (D / Q["respuestas"]).read_text(encoding="utf-8").splitlines():
+        m = re.match(r"dudoso:(\d\d:\d\d:\d\d) = (H|O|X|\?)\s*(?:#\s*(.*))?$", l.strip())
+        if m:
+            R.append(m.groups())
+    for ts, d, txt in R:
+        t0 = seg_aprox(ts)
+        marcas, i = [], 0
+        while i < len(seq):
+            if seq[i]["w"].startswith("[dudoso:"):
+                j = i
+                while j + 1 < len(seq) and not re.search(r"\]\W*$", seq[j]["w"]):
+                    j += 1
+                if seq[i]["t"] is not None and abs(seq[i]["t"] - t0) <= 3:
+                    marcas.append((abs(seq[i]["t"] - t0), i, j))
+                i = j + 1
+            else:
+                i += 1
+        if not marcas:
+            sys.exit(f"dudosos: no hay una marca [dudoso] cerca de {ts}; ¿la página es de otra corrida?")
+        if d == "?":
+            continue
+        _, a, b = min(marcas)
+        marca = " ".join(x["w"] for x in seq[a:b + 1])
+        suf = re.search(r"\](\W*)$", marca).group(1)
+        if d == "H":
+            nuevo = re.match(r"\[dudoso:\s*(.*?)\]\W*$", marca).group(1)
+        elif d == "O":
+            if not (txt or "").strip():
+                sys.exit(f"dudosos: {ts} = O sin texto; escribe lo que se oye después de «#»")
+            nuevo = txt.strip()
+        else:
+            nuevo = "[inaudible]"
+        seq[a:b + 1] = [dict(seq[a], w=w) for w in (nuevo + suf).split()]
+        cambios.append((ts, "texto", f"de oído (página de dudosos: {d})", marca, nuevo + suf, "paso 4"))
 
 
 def main(carpeta):
@@ -183,10 +267,19 @@ def main(carpeta):
         """Ubica la frase cerca de la marca (±90 s). «contexto | frase»: el contexto debe coincidir y no se mueve."""
         ctx = frase.split(" | ")[0].split() if " | " in frase else []
         t0, f = seg_aprox(ts), " ".join(frase.split(" | ")).split()
-        hits = [i for i in range(len(seq) - len(f) + 1)
-                if [x["w"] for x in seq[i:i + len(f)]] == f and seq[i]["t"] is not None and abs(seq[i]["t"] - t0) <= 90]
+        cerca = lambda i: seq[i]["t"] is not None and abs(seq[i]["t"] - t0) <= 90
+        hits = [i for i in range(len(seq) - len(f) + 1) if [x["w"] for x in seq[i:i + len(f)]] == f and cerca(i)]
+        if not hits:  # las mayúsculas a mitad de frase pasan a minúscula al final: «Más» aquí puede salir «más»
+            fl = [w.lower() for w in f]
+            hits = [i for i in range(len(seq) - len(f) + 1)
+                    if [x["w"].lower() for x in seq[i:i + len(f)]] == fl and cerca(i)]
         if not hits:
-            sys.exit(f"No encontré «{frase}» cerca de {ts}.")
+            k = [clave(w) for w in f if clave(w)][:1]
+            vec = [i for i in range(len(seq)) if seq[i]["t"] is not None and abs(seq[i]["t"] - t0) <= 20]
+            ini = next((i for i in vec if k and clave(seq[i]["w"]) == k[0]), vec[0] if vec else 0)
+            muestra = " ".join(x["w"] for x in seq[max(0, ini - 3):ini + len(f) + 6])
+            sys.exit(f"No encontré «{frase}» cerca de {ts}. El motor tiene ahí: «{muestra}». Copia las palabras tal "
+                     "cual (con su puntuación); si otra decisión anterior cambió la frase, escríbela como quedó.")
         hits.sort(key=lambda i: abs(seq[i]["t"] - t0))
         if len(hits) > 1 and abs(seq[hits[1]]["t"] - t0) - abs(seq[hits[0]]["t"] - t0) < 2:
             sys.exit(f"«{frase}» aparece varias veces cerca de {ts}: agrega contexto con « | ».")
@@ -254,7 +347,9 @@ def main(carpeta):
     grupos = [list(g) for _, g in itertools.groupby(range(len(seq)), key=lambda i: seq[i]["turno"])]
     for a, b, c in zip(grupos, grupos[1:], grupos[2:]):
         sa, sb, sc = seq[a[0]]["spk"], seq[b[0]]["spk"], seq[c[0]]["spk"]
-        if len(b) < MIN_PALABRAS and sa == sc != sb and sa != "FONDO" and not any(seq[i].get("fijo") for i in b):
+        formula = sb == MODERADOR and " ".join(clave(seq[i]["w"]) for i in b).strip() in FORMULAS_MOD
+        if len(b) < MIN_PALABRAS and sa == sc != sb and sa != "FONDO" and not formula \
+                and not any(seq[i].get("fijo") for i in b):
             if {seq[i].get("spk_g") for i in b} - {None} <= {sa}:
                 for i in b:
                     seq[i]["spk"], seq[i]["turno"] = sa, seq[a[0]]["turno"]
@@ -270,6 +365,8 @@ def main(carpeta):
         base = seq[r.start]
         seq[r.start:r.stop] = [dict(base, w=w) for w in nuevo.split()]
         cambios.append((ts, "texto", motivo, frase, nuevo, "paso 4"))
+    nombres_dichos(seq, C.get("nombres"), cambios)
+    respuestas_dudosos(D, seq, C.get("dudosos"), cambios)
     if C.get("minusculas", True):
         inst = set(C.get("instituciones", []))
         minus = collections.Counter(re.sub(r"[^\wáéíóúñü]", "", x["w"]) for x in seq if x["w"][:1].islower())
@@ -312,6 +409,13 @@ def main(carpeta):
     cfg = json.loads(cfg_p.read_text(encoding="utf-8")) if cfg_p.exists() else {}
     cfg.update(C.get("cfg", {}))
     cfg["pendientes"] = pend
+    avisos = []
+    for t in turnos:
+        txt = " ".join(clave(w) for w in t["text"].split())
+        a = next((a for a in ALUCINACIONES if a in txt), None)
+        if a:
+            avisos.append(f"{t['ts']} ({t['label']}): sigue «{a}», frase típica de alucinación de Whisper; revisar de oído")
+    cfg["avisos"] = avisos
     (OUT / "turns_ts.json").write_text(json.dumps(turnos, ensure_ascii=False, indent=1), encoding="utf-8")
     (OUT / "cfg.json").write_text(json.dumps(cfg, ensure_ascii=False, indent=1), encoding="utf-8")
     with open(OUT / "cambios.tsv", "w", encoding="utf-8") as f:
@@ -326,6 +430,8 @@ def main(carpeta):
     print(f"{len(turnos)} turnos | {dict(sorted(cnt.items()))} | decisiones: {len(cambios)} | "
           f"pendientes: {len(pend)} | palabras sin voz: {sum(1 for p in seq if p['spk'] is None)}")
     print("voz del cotejo -> voz de la base:", dict(sorted(VOZ_G.items())))
+    for a in avisos:
+        print("AVISO", a)
     if C.get("build_transcript"):
         subprocess.run([sys.executable, str(Path(C["build_transcript"]).expanduser()), str(OUT)], check=True)
 

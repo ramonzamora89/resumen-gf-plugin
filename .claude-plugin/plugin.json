@@ -1,7 +1,7 @@
 {
   "name": "resumen-gf",
   "description": "Grupos focales: limpieza de la transcripción grabada con dos aparatos (voces, contraste, cortes y texto decididos de oído, en el formato del equipo) y resumen de 10 puntos con 2 a 4 citas verificadas, en .docx.",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "author": {
     "name": "Ramon Zamora"
   },

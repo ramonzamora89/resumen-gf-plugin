@@ -166,7 +166,7 @@
   <p class="sub">De la grabación de un grupo focal a una transcripción limpia, decidida de oído por el
   equipo, y de ahí a un resumen de 10 puntos en Word, con 2 a 4 citas textuales por punto, cada una
   verificada contra la transcripción, con el perfil de quien habla y la marca de tiempo.</p>
-  <div class="footer-note">github.com/ramonzamora89/resumen-gf-plugin · v0.7.0 · noviembre de 2026</div>
+  <div class="footer-note">github.com/ramonzamora89/resumen-gf-plugin · v0.8.0 · noviembre de 2026</div>
 </div>
 
 <h1>Contenido</h1>
@@ -278,7 +278,7 @@ compartida), el marketplace también se registra desde el disco:</p>
   <tr><th>Qué</th><th>Dónde</th></tr>
   <tr><td>Registro de marketplaces conocidos</td><td><code>~/.claude/plugins/known_marketplaces.json</code></td></tr>
   <tr><td>Clon del marketplace</td><td><code>~/.claude/plugins/marketplaces/resumen-gf/</code></td></tr>
-  <tr><td>Copia instalada del plugin</td><td><code>~/.claude/plugins/cache/resumen-gf/resumen-gf/0.6.0/</code></td></tr>
+  <tr><td>Copia instalada del plugin</td><td><code>~/.claude/plugins/cache/resumen-gf/resumen-gf/0.8.0/</code></td></tr>
 </table>
 <p>En Windows, <code>~</code> es tu carpeta de usuario: <code>C:\Users\&lt;tu usuario&gt;</code>.</p>
 
@@ -404,15 +404,15 @@ escuchar, propone con evidencia, revisa contradicciones y registra cada decisió
 <table>
   <tr><th>Etapa</th><th>Qué hace Claude</th><th>Qué hace el equipo</th></tr>
   <tr><td>0. Contraste</td><td>Mide el desfase entre aparatos y lista dónde no coinciden; arma el borrador</td><td>—</td></tr>
-  <tr><td>1. Voces</td><td>Arma la página de voces; si no hubo ronda de presentaciones, busca pistas (lo que cada quien dice de sí, marcas de género, cómo le da la palabra el moderador) y revisa contradicciones con los perfiles</td><td>Escucha y asigna cada voz a un perfil</td></tr>
+  <tr><td>1. Voces</td><td>Arma la página de voces; si no hubo ronda de presentaciones, busca pistas (lo que cada quien dice de sí, marcas de género, cómo le da la palabra el moderador) y revisa contradicciones con los perfiles. Si las respuestas se cruzan, arma la página de nombres: cada persona al lado del clip donde el moderador dice su nombre</td><td>Escucha y asigna cada voz a un perfil (o a un nombre, en la página de nombres)</td></tr>
   <tr><td>2. Contraste de aparatos</td><td>Página con los tramos de 8 palabras o más en que los aparatos no coinciden, con los dos audios</td><td>Elige base, cotejo, los dos, inaudible u «otro» con lo que se oye</td></tr>
   <tr><td>3. Cortes entre hablantes</td><td>Corrige los cortes corridos con la gramática y la voz que da cada aparato; prepara una página con los dudosos</td><td>Decide los dudosos</td></tr>
-  <tr><td>4. Texto</td><td>Lee la sesión completa; corrige lo que el cotejo y el contexto confirman y marca el resto como <code>[dudoso: …]</code></td><td>Confirma o corrige cada dudoso</td></tr>
+  <tr><td>4. Texto</td><td>Lee la sesión completa; corrige lo que el cotejo y el contexto confirman y marca el resto como <code>[dudoso: …]</code>; aplica las respuestas del equipo y avisa de las frases típicas de alucinación que sigan en el texto</td><td>Confirma o corrige cada dudoso</td></tr>
   <tr><td>5. Entrega</td><td>Limpia en el formato del equipo: <code>GF3_Limpia.docx</code> (todos «R») y <code>GF3_Limpia con participantes.docx</code></td><td>Decide cómo tratar nombres y testimonios sensibles</td></tr>
 </table>
 
 <h3>Cómo se trabaja con las páginas</h3>
-<p>Cada página se abre con doble clic (<code>clips_contraste/index.html</code>,
+<p>Cada página se abre con doble clic (<code>clips_nombres/index.html</code>, <code>clips_contraste/index.html</code>,
 <code>clips_cortes/index.html</code>, <code>clips_dudosos/index.html</code>). Se escucha, se elige una
 opción y, al final, el botón «Copiar respuestas» deja el texto listo para pegarlo en el chat:</p>
 <pre><code>GF3 · contraste de aparatos
@@ -625,8 +625,8 @@ cada archivo. Se resuelve una vez con
 # Uso normal: pedir el resumen de 10 puntos de una sesión, en el chat.
 
 # Uso directo del script
-SK=~/.claude/plugins/cache/resumen-gf/resumen-gf/0.7.0/skills/resumen-gf
-LG=~/.claude/plugins/cache/resumen-gf/resumen-gf/0.7.0/skills/limpieza-gf
+SK=~/.claude/plugins/cache/resumen-gf/resumen-gf/0.8.0/skills/resumen-gf
+LG=~/.claude/plugins/cache/resumen-gf/resumen-gf/0.8.0/skills/limpieza-gf
 
 python -I "$SK/scripts/generar_resumen.py" "$SK/ejemplo/puntos.json"        # prueba
 python -I "$SK/scripts/generar_resumen.py" puntos.json --solo-verificar

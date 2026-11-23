@@ -30,6 +30,13 @@ Ejemplo ficticio:
   "insertar": [{"ts": "00:20:17", "antes_de": "realmente... | Entonces,", "texto": "Así es.", "voz": "P1",
                 "motivo": "se oye y ningún aparato lo transcribió"}],
   "reemplazar_palabra": [["Fulana,", "[PARTICIPANTE],", "nombre de participante dicho en voz alta"]],
+  "nombres": {"participantes": ["Fulana", "Fulanita", "Mengano Luis"], "otros": {"Zutano": "[MODERADOR]"},
+              "proteger": ["San Mengano"]},
+  "dudosos": {"respuestas": "respuestas_dudosos_v1.txt"},
+  "nombres_voces": {"personas": {"A": "Fulana", "B": "Mengano Luis"},
+                    "llamados": [["00:12:40", "Gracias, Fulana.", "A", 20, 3, "habla alguien y el moderador le agradece"],
+                                 ["00:15:02", "Mengano, ¿cómo", "B", 2, 25, "el moderador le da la palabra y responde"]],
+                    "voces": ["SPEAKER_03", "SPEAKER_05"], "nota": "Mengano llega a las 14:00."},
   "regla_gracias_companera": true,
   "texto": [["00:24:50", "a ver tender,", "a vender,", "cotejo «a vender»; antes dijo que vende tortillas"],
             ["00:44:01", "por bolimer,", "[dudoso: por bolimer],", "los dos aparatos igual, sentido no claro"]],
@@ -57,7 +64,10 @@ Ejemplo ficticio:
 | `oido_cortes` | Igual que `cortes`, con lo que respondió el equipo; la regla de fragmentos no los toca. |
 | `reubicar` | Una frase que la base metió en otro lugar: pasa detrás de `despues_de`, con la hora del cotejo. |
 | `insertar` | Algo que se oye y ningún aparato transcribió, antes de la frase indicada. |
-| `reemplazar_palabra` | Palabra exacta → reemplazo, en todo el texto (nombres dichos en voz alta). |
+| `reemplazar_palabra` | Palabra exacta → reemplazo, en todo el texto. Para nombres conviene «nombres». |
+| `nombres` | Nombres dichos en voz alta. `participantes` → `marca` (por defecto `[PARTICIPANTE]`); `otros`: nombre → marca propia (equipo, familiares); `proteger`: frases públicas que no se tocan. Varias palabras, variantes, sin tildes ni mayúsculas al comparar, solo palabras con mayúscula; se aplica después de «texto», así que «texto» se escribe con los nombres originales. |
+| `dudosos` | Respuestas de la página de dudosos: H (hipótesis sin marca), O (lo escrito después de `#`), X (`[inaudible]`), `?` (queda la marca). |
+| `nombres_voces` | Página `paginas.py nombres`: `personas` (letra de la tabla → nombre que dice el moderador), `llamados` `[marca, frase de la base, letra, s antes, s después, texto]`, `voces` por identificar (si falta, las que no tienen respuesta) y una `nota`. |
 | `texto` | `[marca, frase, reemplazo, motivo]`. El reemplazo puede llevar `[dudoso: …]` o `[inaudible]`. |
 | `instituciones` | Palabras que no pasan a minúscula a mitad de frase. |
 | `cfg` | Campos que se escriben en `limpia/cfg.json` (estado, hablantes, criterio de edición). |
@@ -77,4 +87,6 @@ contraste:00:57:01 = O  # lo que se oye
 # notas tuyas, siempre en líneas aparte
 corte:00:33:28 = C  # lo que dijo el equipo
 dudoso:00:15:18 = H
+dudoso:00:21:40 = O  # lo que se oye
+voz:SPEAKER_03 = A  # página de nombres
 ```

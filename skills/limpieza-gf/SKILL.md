@@ -15,7 +15,7 @@ Scripts (carpeta `scripts/` de este skill; Python 3, `python-docx`, `ffmpeg` en 
 | Script | Qué hace |
 |---|---|
 | `contraste.py contrastar` · `borrador` | Compara los dos aparatos (desfase, tramos distintos) y arma el borrador |
-| `paginas.py` | Entrada para `voces.py`, pistas, páginas de oído (contraste, cortes, dudosos) y análisis de cortes |
+| `paginas.py` | Entrada para `voces.py`, pistas, páginas de oído (nombres, contraste, cortes, dudosos) y análisis de cortes |
 | `limpiar.py CARPETA` | Aplica todas las decisiones de `limpieza.json` palabra por palabra |
 | `formato_limpia.py CARPETA` | Limpia en el formato del equipo: `<nombre>_Limpia.docx` y `… con participantes.docx` |
 
@@ -49,7 +49,14 @@ El formato de `limpieza.json`, con un ejemplo ficticio, está en `references/lim
 4. `voces.py clips alineacion_voces.json AUDIO_BASE clips_voces --limpia <nombre>_para_voces.docx
    --presentaciones pistas.json --titulo "GF3 · identificación de voces"`. La persona del equipo escucha y
    pega las respuestas; guárdalas en `respuestas_v1.txt` y corre `voces.py revisar`.
-5. **Lee lo que dice cada persona** y busca contradicciones con su perfil: sexo («mi esposa»), con quién vive,
+5. **Si las respuestas se cruzan** (dos voces con la misma letra, voces sin elegir, letras que cambian de una
+   ronda a otra), no insistas con la tabla de perfiles: el equipo reconoce mejor un nombre que una letra. Arma
+   la página de nombres: pon en «nombres_voces» de `limpieza.json` el nombre de cada persona tal como lo dice el
+   moderador, los momentos en que la nombra («Gracias, Ana», «Ana, ¿cómo…?», «¿Cómo te llamas?») y las voces
+   pendientes, y corre `paginas.py nombres CARPETA` → `clips_nombres/`. Cada persona se oye al lado de su
+   nombre y cada voz se elige en un menú de nombres; las respuestas salen en el formato de `voces.py`
+   (`voz:SPEAKER_xx = LETRA`). Los nombres viven solo en la carpeta de la sesión.
+6. **Lee lo que dice cada persona** y busca contradicciones con su perfil: sexo («mi esposa»), con quién vive,
    si estudia o trabaja, edad. Contrasta cada voz con la separación del cotejo (si el cotejo también la pone
    en una sola voz, no es una mezcla). Devuelve la duda concreta con la cita y la marca de tiempo; el oído
    decide. Guarda cada versión de las respuestas (`respuestas_v2.txt`…) con el motivo del cambio en un
@@ -97,7 +104,13 @@ coincide con el texto, o la frase aparece dentro de otra), el cotejo suele tener
 con su hora.
 
 El motor aplica además dos reglas: un fragmento de menos de 4 palabras entre dos tramos de la misma persona
-es de esa persona (salvo que el cotejo diga otra cosa), y los turnos seguidos de la misma persona se juntan.
+es de esa persona (salvo que el cotejo diga otra cosa, o que sea una fórmula del moderador como «Por favor.»,
+«Adelante.» o «Gracias.»), y los turnos seguidos de la misma persona se juntan.
+
+Si el motor no encuentra una frase, muestra lo que tiene en ese lugar: copia las palabras tal cual. Las
+mayúsculas a mitad de frase pasan a minúscula al final, así que en el motor puede decir «Más» donde la
+salida dice «más» (la búsqueda ya tolera esa diferencia); y si otra decisión anterior cambió la frase,
+escríbela como quedó.
 Al terminar no debe quedar ningún turno «R»; los que queden van a la página de cortes.
 
 ## 4. Texto (paso 4)
@@ -111,15 +124,27 @@ Al terminar no debe quedar ningún turno «R»; los que queden van a la página 
   transcribieron con el mismo aviso, así que coincidir no basta si el término es raro en ese contexto (un
   municipio del aviso que la grabadora oyó como otra palabra resultó ser otro municipio).
 - Siglas y nombres que Whisper deforma: compáralos con el cotejo y con otras menciones de la misma sesión.
-- `paginas.py dudosos CARPETA` → página con cada `[dudoso: …]`. Si el equipo dice que el audio no
-  corresponde al texto, revisa la hora en los dos aparatos: la base pudo haber comprimido la frase.
+- `paginas.py dudosos CARPETA` → página con cada `[dudoso: …]`. Guarda las respuestas tal cual en
+  `respuestas_dudosos_v1.txt` y ponlo en «dudosos» de `limpieza.json`: el motor aplica H (queda la hipótesis
+  sin marca), O (lo escrito después de `#`) y X (`[inaudible]`); un «?» deja la marca. Si el equipo dice que el
+  audio no corresponde al texto, revisa la hora en los dos aparatos: la base pudo haber comprimido la frase.
+- **Alucinaciones que sobreviven.** Al terminar, `limpiar.py` avisa («AVISO», y en «avisos» de
+  `limpia/cfg.json`) de cada frase típica de Whisper que siga en el texto («Gracias por ver el video»,
+  «Gracias a todos por su atención»…), aunque haya entrado por un tramo corto o con una respuesta T. Llévalas
+  a la página de cortes o de dudosos: el oído decide si se dijo.
 - Las mayúsculas a mitad de frase pasan a minúscula solas; protege instituciones en «instituciones».
 
 ## 5. Nombres y contenido sensible
 
-- Nombre de un participante dicho en voz alta (de esta sesión u otra) → `[PARTICIPANTE]` en la limpia
-  («reemplazar_palabra» o «texto»). Los nombres de funcionarios y figuras públicas se mantienen. Los de
-  terceros que no son ni una cosa ni otra: pregunta.
+- Nombre de un participante dicho en voz alta (de esta sesión u otra) → `[PARTICIPANTE]` en la limpia. Ponlos
+  en «nombres» de `limpieza.json`: los de participantes en «participantes», con las variantes que Whisper
+  escribió («Fulanita», «Fulani») y los nombres compuestos («Mengano Luis»); los del equipo y de familiares en
+  «otros», con su marca (`[MODERADOR]`, `[EQUIPO]`, `[nombre]`). El motor respeta la puntuación pegada, busca
+  primero los nombres más largos y solo cambia palabras con mayúscula. **Protege** en «proteger» las frases
+  públicas que contienen un nombre de la lista («Miguel Ángel Asturias», «San Juan Sacatepéquez»). Los nombres de
+  funcionarios y figuras públicas se mantienen. Los de terceros que no son ni una cosa ni otra: pregunta.
+- Después, busca en la limpia cada nombre de la lista y cada nombre propio que quede: confirma que lo que
+  quedó es público.
 - Antes de que algo salga del equipo se decide explícitamente cómo se tratan los testimonios sensibles; deja
   la decisión escrita en la carpeta de la sesión.
 - Las carpetas `clips_*` llevan voces reales y los archivos de trabajo (`cambios.tsv`, respuestas) pueden
@@ -127,7 +152,7 @@ Al terminar no debe quedar ningún turno «R»; los que queden van a la página 
 
 ## 6. Entregar
 
-1. `limpiar.py CARPETA`: debe terminar con 0 pendientes y 0 palabras sin voz.
+1. `limpiar.py CARPETA`: debe terminar con 0 pendientes, 0 palabras sin voz y sin avisos de alucinación.
 2. En «cfg» de `limpieza.json` pon el estado («LIMPIA (fecha): …») y los hablantes.
 3. `formato_limpia.py CARPETA` → `<nombre>_Limpia.docx` (todos «R») y `<nombre>_Limpia con
    participantes.docx` (códigos y columnas Código y Turnos). Comprueba con grep que no haya nombres de

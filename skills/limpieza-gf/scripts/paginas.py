@@ -12,6 +12,11 @@
   python paginas.py pistas CARPETA
       Ubica cada pista de limpieza.json en las palabras de la base y escribe pistas.json, que se pasa a
       `voces.py clips … --presentaciones pistas.json` (plugin resumen-gf).
+  python paginas.py nombres CARPETA
+      clips_nombres/: cada persona en los clips donde el moderador dice su nombre («Gracias, Ana», «Ana, ¿cómo…?»)
+      y una muestra de cada voz por identificar, con un menú de nombres. Sale de «nombres_voces» en limpieza.json.
+      Respuestas: «voz:SPEAKER_xx = LETRA  # nota», el mismo formato de voces.py. Es la página que conviene usar
+      cuando las letras de la tabla de perfiles se cruzan: el equipo reconoce mejor un nombre que una letra.
   python paginas.py contraste CARPETA
       clips_contraste/: los tramos de LARGO palabras o más en que los aparatos no coinciden, con los dos
       audios lado a lado. Respuestas: «contraste:HH:MM:SS = T|G|TG|X|O  # texto».
@@ -148,7 +153,8 @@ PISTA_RE = re.compile(
 
 def cmd_pistas_buscar(D, C):
     W = palabras(D / C["base"]["whisperx"])
-    R = respuestas_voces(D, C) if (D / C["voces"]["respuestas"]).exists() else {C["moderador"]: "Mod"}
+    hay = C.get("voces", {}).get("respuestas") and (D / C["voces"]["respuestas"]).exists()
+    R = respuestas_voces(D, C) if hay else {C["moderador"]: "Mod"}
     txt, pos, p = " ".join(w["word"] for w in W), [], 0
     for w in W:
         pos.append(p)
@@ -182,6 +188,83 @@ def cmd_pistas(D, C):
         print(f"{hms(ini)}  {texto}")
     (D / "pistas.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
     print(len(out), "pistas en pistas.json")
+
+
+# ---------------------------------------------------------------- nombres
+def cmd_nombres(D, C):
+    """Página «¿quién es quién?»: la voz al lado del nombre que dice el moderador."""
+    N = C.get("nombres_voces") or sys.exit("Falta «nombres_voces» en limpieza.json (ver references/limpieza_json.md).")
+    personas = N["personas"]  # {"C": "Nombre como lo dice el moderador", …}; los nombres no salen de la sesión
+    W = palabras(D / C["base"]["whisperx"])
+    pal = [norm(w["word"]) for w in W]
+    out = D / "clips_nombres"
+    out.mkdir(exist_ok=True)
+    for f in out.glob("*.mp3"):
+        f.unlink()
+    audio = D / C["base"]["audio"]
+    paso1 = collections.defaultdict(list)
+    for n, (ts, frase, letra, antes, despues, texto) in enumerate(N.get("llamados", []), 1):
+        q = [norm(t) for t in frase.split() if norm(t)]
+        hits = [k for k in range(len(pal) - len(q) + 1)
+                if pal[k:k + len(q)] == q and abs(W[k]["start"] - seg(ts)) <= 90]
+        if not hits:
+            cerca = " ".join(w["word"] for w in W if abs(w["start"] - seg(ts)) <= 8)
+            sys.exit(f"nombres: no encontré «{frase}» cerca de {ts}. La base tiene ahí: «{cerca}»")
+        k = min(hits, key=lambda k: abs(W[k]["start"] - seg(ts)))
+        cortar(audio, W[k]["start"] - antes, W[k]["start"] + despues, out / f"n{n:02d}.mp3")
+        paso1[letra].append((hms(W[k]["start"]), texto, f"n{n:02d}.mp3"))
+    resp = set()
+    if C.get("voces", {}).get("respuestas") and (D / C["voces"]["respuestas"]).exists():
+        resp = set(respuestas_voces(D, C))
+    voces = N.get("voces") or sorted({w.get("speaker") for w in W if w.get("speaker")} - resp - {C["moderador"]})
+    paso2 = []
+    for v in voces:  # muestra: el tramo seguido más largo de esa voz, hasta 20 s
+        mejor, ini, k = (0, 0, 0), None, 0
+        for i, w in enumerate(W + [{"speaker": None, "start": 1e9}]):
+            if w.get("speaker") == v:
+                if ini is None:
+                    ini = i
+            elif ini is not None:
+                dur = W[i - 1].get("end", W[i - 1]["start"]) - W[ini]["start"]
+                mejor = max(mejor, (dur, ini, i - 1))
+                ini = None
+        if not mejor[0]:
+            print(f"!! {v}: no tiene palabras en la base; se omite")
+            continue
+        a = W[mejor[1]]["start"]
+        cortar(audio, a, min(a + 20, W[mejor[2]].get("end", a + 20)), out / f"voz_{v}.mp3")
+        paso2.append((v, hms(a)))
+    op = [(l, n) for l, n in personas.items()] + [("?", "No sé")]
+    h1 = "".join(f"<section><h2>{E(personas.get(l, l))}</h2>" + "".join(
+        f'<p class="hoy">{ts} · {E(t)}</p><audio controls preload="none" src="{f}"></audio>' for ts, t, f in clips)
+        + "</section>" for l, clips in paso1.items())
+    h2 = "".join(f'<section class="voz" data-v="{v}"><h2>Voz {v[-2:]}</h2><p class="hoy">muestra desde {ts}</p>'
+                 f'<audio controls preload="none" src="voz_{v}.mp3"></audio>'
+                 f'<select><option value="">— elegir —</option>'
+                 + "".join(f'<option value="{l}">{E(n)}</option>' for l, n in op)
+                 + '</select> <input type="text" placeholder="nota" style="width:60%"></section>' for v, ts in paso2)
+    titulo = f"{C.get('sesion', 'Sesión')} · ¿quién es quién?"
+    (out / "index.html").write_text(f"""<!doctype html><html lang="es"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>{E(titulo)}</title><style>{ESTILO}
+select {{ font: inherit; padding: 4px; }}</style>
+<h1>{E(titulo)}</h1><p><strong>Material de trabajo con voces y nombres reales: no sale del equipo.</strong></p>
+<p>Paso 1: escucha a cada persona en los clips donde el moderador dice su nombre. Paso 2: escucha cada voz y elige
+de quién es. {E(N.get("nota", ""))}</p>
+<h2>Paso 1. El moderador nombra</h2>{h1}
+<h2>Paso 2. ¿De quién es cada voz?</h2>{h2}
+<p><button id="copiar">Copiar respuestas</button> <span id="ok"></span></p><pre id="salida"></pre>
+<script>
+document.getElementById('copiar').onclick = () => {{
+  const L = [{json.dumps(titulo)}];
+  document.querySelectorAll('section.voz').forEach(s => {{
+    const v = s.querySelector('select').value || '?'; const t = s.querySelector('input').value.trim();
+    L.push(`voz:${{s.dataset.v}} = ${{v}}` + (t ? `  # ${{t}}` : ''));
+  }});
+  const txt = L.join('\\n'); document.getElementById('salida').textContent = txt;
+  try {{ navigator.clipboard.writeText(txt).then(() => document.getElementById('ok').textContent = 'Copiado'); }} catch (e) {{}}
+}};
+</script></html>""", encoding="utf-8")
+    print("ok", out / "index.html", sum(len(c) for c in paso1.values()), "clips de nombres,", len(paso2), "voces")
 
 
 # ---------------------------------------------------------------- contraste
@@ -337,7 +420,8 @@ def cmd_para_voces(D, C):
     print("ok", sal.name, len(m["turnos"]), "turnos")
 
 
-CMDS = {"para-voces": cmd_para_voces, "pistas-buscar": cmd_pistas_buscar, "pistas": cmd_pistas, "contraste": cmd_contraste,
+CMDS = {"para-voces": cmd_para_voces, "pistas-buscar": cmd_pistas_buscar, "pistas": cmd_pistas, "nombres": cmd_nombres,
+        "contraste": cmd_contraste,
         "cortes-analisis": cmd_cortes_analisis, "cortes": cmd_cortes, "dudosos": cmd_dudosos}
 
 if __name__ == "__main__":
