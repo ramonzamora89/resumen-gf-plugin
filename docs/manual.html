@@ -193,9 +193,17 @@ grupo focal en un <strong>resumen de 10 puntos</strong> en Word. Cada punto tien
 formal, un párrafo en lenguaje llano y <strong>de 2 a 4 citas textuales</strong> de quienes
 participaron, con su perfil (sexo, edad y ocupación) y la marca de tiempo para volver al audio.</p>
 
-<p>Trae <strong>un skill</strong>, <code>resumen-gf</code>, con un script. Se activa solo dentro de
-una sesión de Claude Code cuando pides «el resumen de 10 puntos», «los hallazgos» o «una idea
-general» de una sesión. No hay que invocarlo con un comando especial.</p>
+<p>Trae <strong>dos skills</strong>: <code>limpieza-gf</code>, que deja lista la transcripción de una
+sesión grabada con dos aparatos (§7), y <code>resumen-gf</code>, que escribe el resumen. Se activan
+solos dentro de una sesión de Claude Code cuando pides «limpia el GF3» o «el resumen de 10 puntos»;
+no hay que invocarlos con un comando especial.</p>
+
+<div class="callout">
+  <span class="label">El otro plugin del equipo</span>
+  La transcripción de los audios (de la grabación al JSON) la hace el plugin
+  <strong>whisperx-transcript-toolkit</strong>, que tiene su propio manual. Quien solo limpia o resume
+  sesiones ya transcritas no lo necesita.
+</div>
 
 <h3>Lo que aporta el plugin</h3>
 <ul>
@@ -283,8 +291,16 @@ compartida), el marketplace también se registra desde el disco:</p>
 <p>En Windows, <code>~</code> es tu carpeta de usuario: <code>C:\Users\&lt;tu usuario&gt;</code>.</p>
 
 <h3>Actualizar y desinstalar</h3>
-<pre><code>/plugin marketplace update resumen-gf   # trae los cambios del repositorio
-/plugin                                 # habilitar, deshabilitar o desinstalar</code></pre>
+<p>Este marketplace no se actualiza solo. Hay que traer la lista nueva <strong>y</strong> actualizar
+el plugin instalado: con solo el primer paso, el plugin sigue en la versión vieja.</p>
+<pre><code>claude plugin marketplace update resumen-gf     # trae la lista nueva del repositorio
+claude plugin update resumen-gf@resumen-gf      # actualiza el plugin instalado</code></pre>
+<p>Si <code>claude plugin update</code> no existe en tu versión, desinstala e instala:</p>
+<pre><code>/plugin uninstall resumen-gf@resumen-gf
+/plugin install resumen-gf@resumen-gf</code></pre>
+<p>Después, en la sesión abierta, <code>/reload-plugins</code> (o abre una sesión nueva) y comprueba con
+<code>/plugin list</code> que diga la versión nueva. Con <code>/plugin</code> también se habilita,
+deshabilita o desinstala.</p>
 
 <h3>Alternativa sin instalar (sesión suelta)</h3>
 <pre><code>claude --plugin-dir E:\resumen-gf-plugin</code></pre>
@@ -324,6 +340,20 @@ con interfaz gráfica. Todo lo de este manual corre en la pestaña <strong>Code<
   <div class="step-title"><span class="step-num">3</span><h4 style="margin:0">Instalar</h4></div>
   <pre><code>/plugin install resumen-gf@resumen-gf</code></pre>
   <p>Queda disponible en todas las sesiones de Code y de la CLI.</p>
+</div>
+
+<div class="manual-step">
+  <div class="step-title"><span class="step-num">4</span><h4 style="margin:0">Actualizar cuando hay versión nueva</h4></div>
+  <p>Los mismos dos pasos de §3 (traer la lista y actualizar el plugin) y después
+  <code>/reload-plugins</code> en la sesión.</p>
+</div>
+
+<div class="callout">
+  <span class="label">Si /plugin no responde en la app</span>
+  Usa los comandos <code>claude plugin …</code> de §3 en PowerShell (son los mismos archivos de
+  <code>~/.claude</code>) y después <code>/reload-plugins</code> en la app. Si PowerShell no reconoce
+  <code>claude</code>, instala una vez Claude Code para la terminal. La app también tiene el botón
+  <strong>+</strong> junto al cuadro de mensaje &rarr; <strong>Plugins</strong>.
 </div>
 
 <h2 id="probar">5. Probar que funciona</h2>
